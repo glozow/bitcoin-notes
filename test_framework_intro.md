@@ -1,10 +1,8 @@
 # Functional Test Framework
 
-You might be here because you're a complete beginner and someone told you to start with functional tests.
-Or you need to write a functional test and want to sanity check that you're doing things correctly.
-Or you enjoy reading docs, and that's great because I enjoy writing docs.
+WIP Personal notes on the functional tests in bitcoin core... not guaranteed to be up-to-date
 
-(TODO: add links in places where I'm referencing the code)
+TODO: add links in places where I'm referencing the code
 
 ## Basics - Data Structures
 
@@ -24,11 +22,15 @@ The most basic P2PConnection can initiate connections with TestNodes, send P2P m
 We also ahve P2PInterface, which a tiny bit more sophisticated - it sends `pong`s in response to `ping`s, sends `getdata` in response to `inv`s, etc.
 You probably want to extend this interface for all your basic needs.
 
+TODO: update to p2p, explain why
+
 ### BitcoinTestFramework
 
 The BitcoinTestFramework class is a base class for all functional tests.
 It sets up a chain for you in -regtest mode (which mostly means that you can speed things up and not wait 10 minutes for a block).
 It will also spin up any number of TestNodes (from your compiled bitcoind) for you, and you can configure them using the same command-line args you normally would.
+
+TODO: more explanation on the setup and config options
 
 You can customize the setup to fund a few nodes, have some blocks mined, start with the network partitioned, etc.
 By default, everyone starts out with some money (i.e. mined some blocks) and is connected to one another.
@@ -70,6 +72,18 @@ peer.send_with_ping(msg)
 assert_expected_behavior() # Whatever behavior you're expecting
 ```
 
+### Create Transactions 
+TODO
+
+### Create Blocks
+TODO
+
+### Make Malformed Messages
+TODO
+
+### Speed Things Up (setmocktime, mockforward)
+TODO
+
 ## Synchronization
 
 TLDR:
@@ -102,10 +116,10 @@ You might notice a lot of wonderful `wait_until` and `wait_for*` functions sitti
 How convenient! Note that they may not quite be thread safe and you'll usually need
 to pass in a lock (see the `mininode_lock` section).
 
-The `wait_for*` functions are abundant in the mininodes, and are often your bread and butter when testing expected behavior in functional tests.
+The `wait_for*` functions are abundant in the mininodes, and are often the bread and butter when testing expected behavior in functional tests.
 They include `wait_for_tx`, which allows you to ensure that a mininode receives a transaction (by tx hash), `wait_for_disconnect`, which allows you to verify that your node is correctly punishing bad behavior from its peers, and many more!
 
-The `wait_until`s are even more sexy: they allow you to make your test wait for an arbitrary predicate to evaluate to true.
+The `wait_until`s are even cooler: they allow you to make your test wait for an arbitrary predicate to evaluate to true.
 You'll use these all the time when writing functional tests too, since they're so versatile, but you need to make sure you're syncrhonizing properly.
 
 
@@ -152,7 +166,7 @@ We shouldn't leave it empty.
 That would leave room for the test succeeding simply because we executed the assertion too early, and the transaction _was_ sent to the peer a little bit later.
 It can't be a `wait_until(?)` because we don't expect anything to happen.
 You might be tempted to add a `sleep(5)` because you definitely expect transaction relay to be faster than 5 seconds.
-But that doesn't solve our race condition.
+But that doesn't solve the race condition.
 
 Instead, we can do something like:
 ```py
@@ -164,7 +178,7 @@ stingy_peer.sync_with_ping() # If node were to send an inv, it would happen here
 stingy_peer.sync_with_ping() # If peer sent a getdata in response to the imaginary inv, it would receive apong after the tx
 assert txid != stingy_peer.last_message['tx].tx.rehash()
 ```
-This isn't the only way to do it, and it doesn't change the behavior of your tests, but it's necessary to make sure your results are correct.
+This isn't the only way to do it, and it doesn't change the behavior of your tests, but eliminating race conditions necessary to make sure your results are correct.
 
 ### Mininode Lock
 
@@ -175,7 +189,7 @@ mininode_lock = threading.Lock()
 ```
 
 The `mininode_lock` is a mutex.
-This little guy is able to synchronize all data accesses between the mininodes and your test logic.
+This lock synchronizes all data accesses between the mininodes and your test logic.
 More specifically, as long as you have the `mininode_lock`, you can rest assured that you are thread-safely accessing the data structures in _all_ your mininodes.
 Conversely, if you don't have the `mininode_lock`, you are exposing yourself to data races galore.
 
