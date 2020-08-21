@@ -2,7 +2,9 @@
 # Copyright (c) 2017-2019 The Bitcoin Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
-"""An example functional test
+"""An example functional test (taken from test/functional/example_test.py)
+
+I've added a bunch of comments to explain things
 
 The module-level docstring should include a high-level description of
 what the test is doing. It's the first thing people see when they open
@@ -84,6 +86,8 @@ class ExampleTest(BitcoinTestFramework):
         # mined by your test nodes. This funds each of their wallets.
         # As you'd expect, if you start with a clean chain, none
         # of your nodes will have any money to make transactions with.
+        # To fund a node's wallet, the easiest way is to have it generate
+        # 100 blocks (coinbases need 100 confirmations to be spent)
         self.setup_clean_chain = True
         # These 3 nodes start out connected by default unless you
         # change it in setup_network.
@@ -158,6 +162,8 @@ class ExampleTest(BitcoinTestFramework):
         # IBD is initial block download. While nodes are in IBD, they don't
         # think they have the most up-to-date blockchain and are only
         # interested in downloading blocks from their peers.
+        # generate() is an easy way to make blocks (can be found in blocktools)
+        # there are other ways too!
         blocks = [int(self.nodes[0].generate(nblocks=1)[0], 16)]
         # Sync all means we sync blocks (everyone has same chain tip) and mempools.
         # If you try to sync while nodes aren't connected, it will time out.
@@ -182,6 +188,7 @@ class ExampleTest(BitcoinTestFramework):
 
         self.log.info("Create some blocks")
         # getblockcount, getbestblockhash, and getblock are RPCs in src/rpc/blockchain.cpp
+        # we need to convert to an int with base 16 (hex) to use later
         self.tip = int(self.nodes[0].getbestblockhash(), 16)
         self.block_time = self.nodes[0].getblock(self.nodes[0].getbestblockhash())['time'] + 1
 
@@ -191,9 +198,11 @@ class ExampleTest(BitcoinTestFramework):
             # Use the mininode and blocktools functionality to manually build a block
             # Calling the generate() rpc is easier, but this allows us to exactly
             # control the blocks and transactions.
+            # you can create_coinbase() without a funded wallet because they don't require any inputs
             block = create_block(self.tip, create_coinbase(height+1), self.block_time)
             # we can do this instantaneously (no actual PoW) because we are in regtest mode
             block.solve()
+            # a msg_block is a p2p message that contains an entire block, serialized
             block_message = msg_block(block)
             # Send message is used to send a P2P message to the node over our P2PInterface
             # p2p in this case is the BaseNode, not the TestNode peers that node0 is connected to
