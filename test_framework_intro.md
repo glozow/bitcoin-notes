@@ -11,7 +11,7 @@ TestNode represents a bitcoind node for use in functional tests. It uses whateve
 (don't forget to `make` before expecting changes to be reflected in functional tests).
 For the most part, you will likely spin up a TestNode and use its interfaces (i.e. RPC) to verify behavior of nodes.
 If you want more fine-grained control over what your node is doing (e.g. you want it to ignore messages or have
-some specific malicious behavior), you want to use a mininode. 
+some specific malicious behavior), you want to use a mininode (aka p2p). 
 
 ### Mininodes or P2PConnections
 Mininodes refer to simplistic peers (we don't want to call them "nodes" because they aren't created from bitcoind and
@@ -22,7 +22,7 @@ The most basic P2PConnection can initiate connections with TestNodes, send P2P m
 We also ahve P2PInterface, which a tiny bit more sophisticated - it sends `pong`s in response to `ping`s, sends `getdata` in response to `inv`s, etc.
 You probably want to extend this interface for all your basic needs.
 
-TODO: update to p2p, explain why
+Note: mininode.py is now p2p.py in the test framework. It was changed because the name "mininode" is misleading.
 
 ### BitcoinTestFramework
 
@@ -42,7 +42,7 @@ At the end, it will handle teardown for you.
 
 Easy way to do things that you usually want to do in a functional test.
 
-### Send money.
+### Send Money
 
 Easiest way is through the wallet RPC `sendtoaddress` (just make sure you have an address):
 
@@ -51,12 +51,24 @@ address = node.getnewaddress()
 txid = node.sendtoaddress(address, 0.1)
 ```
 
+TODO: add MiniWallet; tldr `send_self_transfer` is better.
+You actually shouldn't use wallet RPCs in non-wallet* functional tests because they shouldn't need the wallet to be compiled.
+
 If you started with a clean chain or you got an "insufficient funds error": you need to mine blocks.
 ```py
 self.nodes[0].generate(100)
 ```
 This funds node0's wallet with outputs from the coinbase transactions.
 You need 100 because coinbase transactions require 100 confirmations before they can be spent
+
+### Clear the mempool.
+
+You most likely want to do this when testing what's in your mempool.
+Just mine a block and (unless you have a TON of transactions) this will clear the mempool.
+
+```py
+node.generate(1)
+```
 
 ### Test responses to P2P Messages
 
@@ -72,7 +84,7 @@ peer.send_with_ping(msg)
 assert_expected_behavior() # Whatever behavior you're expecting
 ```
 
-### Create Transactions 
+### Create Transactions From Scratch
 TODO
 
 ### Create Blocks
@@ -215,4 +227,5 @@ def get_invs(self):
 ```
 
 Why not just access `peer.tx_invs_received` in the test logic directly?
-Because we might encounter a race condition in accessing `tx_invs_received`: if we don't grab the mininode_lock, we might be trying to access the it at the same time the mininode itself is writing to it. Then, our test reslut (asserting we did/didn't receive a tx inv) would depend on whether the test logic thread or the mininode thread gets scheduled first.
+Because we might encounter a race condition in accessing `tx_invs_received`: if we don't grab the mininode_lock, we might be trying to access the it at the same time the mininode itself is writing to it.
+Then, our test result (asserting we did/didn't receive a tx inv) would depend on whether the test logic thread or the mininode thread gets scheduled first.
