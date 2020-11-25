@@ -60,17 +60,17 @@ Calling `setmocktime` will not affect the scheduler, and `mockforward` will not 
 
 [Orphan blocks](https://bitcoin.stackexchange.com/questions/5859/what-are-orphaned-and-stale-blocks/) are "are valid blocks which are not part of the main chain."
 They are orphaned in the sense that they didn't become a part of the main chain; they're a fork of size 1.
-This is usually rare. It really sucks when a block is orphaned.
+This is normal but rare, and we want to prevent orphaned blocks from happening too much.
 
 Orphan Transactions are tranactions with missing inputs that a node assumes may be valid but it doesn't have the parent transaction on hand.
 When a transaction's inputs are missing, it's not possible to validate whether it's an invalid transaction yet.
 Nodes typically keep the orphan transaction in an "orphan pool" and request the parent transaction from the originating peer.
-This happens all the time, since there are no guarantees in transaction relay ordering.
+This happens all the time and is fine, since there are no guarantees in transaction relay ordering.
 
 ### Soft/Hard Fork, Repo Fork
 
 A soft/hard fork occurs when there is a chain split in the network.
-Typically, the network picks the fork with the most work and continues building blocks on that one, leaving the other fork behind.
+Typically, the network picks a fork (should be the one with the most work) and continues building blocks on that one, leaving the other fork behind.
 Some forks are unintentional and temporary, others result in altcoins.
 
 You can also "fork" a git repository, i.e. make a copy of it for yourself, then continue to read/write your own fork.
