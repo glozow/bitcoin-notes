@@ -56,6 +56,43 @@ The `mockforward` instructs the scheduler (Bitcoin Core's data structure that st
 This affects scheduled routines like rebroadcast.
 Calling `setmocktime` will not affect the scheduler, and `mockforward` will not change the system time.
 
+### Orphan blocks, Orphan transactions
+
+[Orphan blocks](https://bitcoin.stackexchange.com/questions/5859/what-are-orphaned-and-stale-blocks/) are "are valid blocks which are not part of the main chain."
+They are orphaned in the sense that they didn't become a part of the main chain; they're a fork of size 1.
+This is usually rare. It really sucks when a block is orphaned.
+
+Orphan Transactions are tranactions with missing inputs that a node assumes may be valid but it doesn't have the parent transaction on hand.
+When a transaction's inputs are missing, it's not possible to validate whether it's an invalid transaction yet.
+Nodes typically keep the orphan transaction in an "orphan pool" and request the parent transaction from the originating peer.
+This happens all the time, since there are no guarantees in transaction relay ordering.
+
+### Soft/Hard Fork, Repo Fork
+
+A soft/hard fork occurs when there is a chain split in the network.
+Typically, the network picks the fork with the most work and continues building blocks on that one, leaving the other fork behind.
+Some forks are unintentional and temporary, others result in altcoins.
+
+You can also "fork" a git repository, i.e. make a copy of it for yourself, then continue to read/write your own fork.
+You can make a Pull Request from your fork to the original fork, i.e. ask it to incorporate changes that you made to your own copy of the repository.
+This is usually intentional, and can also result in altcoins.
+
+### BCH, Bech32
+
+[BCH](https://en.wikipedia.org/wiki/BCH_code) stands for Bose Chaudhuri Hocquenghem codes. It's also an acronym for other things.
+
+Bech32 is a segwit address format, see [BIP 173](https://github.com/bitcoin/bips/blob/master/bip-0173.mediawiki).
+There's some information on how they're related in [this stack exchange post](https://bitcoin.stackexchange.com/questions/74573/how-is-bech32-based-on-bch-codes)
+
+### Coins, Bitcoins, COIN
+
+When you see "coins" in the codebase it usually means `CCoins`, i.e. UTXOs.
+You have "coins" in your wallet to spend.
+Coin selection is picking which UTXOs to use to create a transaction.
+These are, obviously, different from bitcoins, since a UTXO can have many different values other than 1 BTC.
+
+In the codebase, there's often a `COIN` constant used to easily represent the number of satoshis in 1 BTC.
+
 ### Cypherpunk, Cyberpunk, Cyberphunk
 
 [Cypherpunks](https://www.activism.net/cypherpunk/manifesto.html) write code.
@@ -64,4 +101,4 @@ Calling `setmocktime` will not affect the scheduler, and `mockforward` will not 
 'combination of low-life and high tech' featuring advanced technological and scientific achievements, 
 such as artificial intelligence and cybernetics, juxtaposed with a degree of breakdown or radical change in the social order."
 
-Cyberphunk is, I'm guessing, phunky music that relates to cyber stuff.
+Cyberphunk is, I'm guessing, funky music that relates to cyber stuff.
