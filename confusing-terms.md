@@ -12,8 +12,8 @@ A `block-relay-only` peer is a peer to which your node has made this type of con
 
 ### OutPoint, Output
 
-COutPoints are a data structure used to refer to transaction outputs. They consist of the transaction hash and the index `n` to indicate which output it is in vout.
-COutPuts are transaction outputs themselves. They contain the `nValue` and `scriptPubKey`.
+[COutPoint](https://doxygen.bitcoincore.org/class_c_out_point.html)s, sometimes also called prevouts, are a data structure used to refer to a transaction you're spending from. They consist of the transaction hash and the index `n` to indicate which output it is in vout.
+[COutPut](https://doxygen.bitcoincore.org/class_c_output.html)s are transaction outputs themselves. They contain the `nValue` and `scriptPubKey`.
 
 ### Address, Addr
 
@@ -43,16 +43,16 @@ A mining node creates new blocks.
 
 ### The Scheduler, schedulers
 
-Bitcoin Core nodes have a scheduler that stores tasks to be executed at some point in the future.
+Bitcoin Core nodes have a [SchedulerThread](https://doxygen.bitcoincore.org/class_c_scheduler.html#a14d2800815da93577858ea078aed1fba) that stores tasks to be executed at some point in the future such as dumping contents to disk and asynchronous callbacks.
 This is distinct from the scheduler in your computer's operating system, which schedules threads.
 If something impacts "the scheduler" in Bitcoin Core, this does not affect any other process in your system.
 
 ### setmocktime, mockforward
 
-The `setmocktime` RPC sets the system clock to a specified time.
+The [setmocktime](https://github.com/bitcoin/bitcoin/blob/3b6d1b61d31674e033e821046baa95c66dedf623/src/rpc/misc.cpp#L360) RPC sets the system clock to a specified time.
 This affects all stats that are based on clock, such as ping times.
 
-The `mockforward` instructs the scheduler (Bitcoin Core's data structure that stores tasks to be executed in the future) to reduce the time on all of its tasks.
+The [mockscheduler](https://github.com/bitcoin/bitcoin/blob/3b6d1b61d31674e033e821046baa95c66dedf623/src/rpc/misc.cpp#L397) (previously `mockforward`) instructs the scheduler (Bitcoin Core's data structure that stores tasks to be executed in the future) to reduce the time on all of its tasks.
 This affects scheduled routines like rebroadcast.
 Calling `setmocktime` will not affect the scheduler, and `mockforward` will not change the system time.
 
