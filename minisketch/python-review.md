@@ -41,7 +41,7 @@ Since the gcd is 1, we have `1 = x*t1 + modulus*t2 = x*t1` (since `modulus*anyth
 
 - A n-degree polynomial can have at most n roots. It _may_ have fewer roots that are repeated (note n-degree polynomial with unique roots is synonymous with having n roots). 
 
-- This is important because our set `{m_1 ... m_n}` is equal to the roots of the polynomial. If it doesn't have unique roots, then we don't have unique solution...
+- This is important because our set `{m_1 ... m_n}` is derived from the roots of the polynomial. The Berklekamp Trace Algorithm also requires this I believe. 
 
 - For every finite field of order q, the polynomial `X^q - X` has all q elements of the finite field as its roots exactly once, so it's factorizable into `(X - e_1)(X - e_2)(X - e_3)...(X - e_q)`. If another polynomial has unique roots, `X^q - X` must be a multiple of it.
 
@@ -49,3 +49,7 @@ Since the gcd is 1, we have `1 = x*t1 + modulus*t2 = x*t1` (since `modulus*anyth
 
 6. To actually find the roots, the Berlekamp Trace Algorithm is used. It uses the trace function `t(x) = x + x^2 + x^4 + ... + x^(fieldsize/2)` which maps every element of a field of size `2^n` to 0 or 1. In our 8-bit field that means `t(x) = x + x^2 + x^4 + x^8 + x^16 x^32 + x^64 + x^128`. This means that for any non-zero field element p, `tr(p*x)` also has this property, and every choice of p will map a different subset of field elements to 0 (and the others to 1). How is this property used to recursively split the polynomial into smaller and smaller ones?
 
+- From the paper, interesting property of the trace function is it's a `F_2`-linear mapping.
+
+- The gcd of the trace and the polynomial is a polynomial with roots = poly and the roots shared between trace and poly.
+So you recurse on two parts: (1) gcd (after you make it monic) and (2) poly divided by gcd (which has the other roots).
