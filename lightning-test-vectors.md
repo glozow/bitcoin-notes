@@ -89,6 +89,7 @@ simple commitment with no HTLCs hex:
 
     02000000000101bef67e4e2fb9ddeeb3461973cd4c62abb35050b1add772995b820b584a488489000000000038b02b8002c0c62d0000000000160014ccf1af2f2aabee14bb40fa3851ab2301de84311054a56a00000000002200204adb4e2f00643db396dd120d4e7dc17625f5f2c11a40d857accc862d6b7dd80e0400473044022051b75c73198c6deee1a875871c3961832909acd297c6b908d59e3319e5185a46022055c419379c5051a78d00dbbce11b5b664a0c22815fbcc6fcef6b1937c383693901483045022100f51d2e566a70ba740fc5d8c0f07b9b93d2ed741c3c0860c613173de7d39e7968022041376d520e9c0e1ad52248ddf4b22e12be8763007df977253ef45a4ca3bdb7c001475221023da092f6980e58d2c037173180e9a465476026ee50f96695963e8efe436f54eb21030e9f7b623d2ccc7c9bd44d66d5ce21ce504c0acf6385a132cec6d3c39fa711c152ae3e195220
 
+
 simple commitment with no HTLCs decoded:
 
     {
@@ -158,3 +159,101 @@ simple commitment with no HTLCs info:
     remote_signature = 3045022100f51d2e566a70ba740fc5d8c0f07b9b93d2ed741c3c0860c613173de7d39e7968022041376d520e9c0e1ad52248ddf4b22e12be8763007df977253ef45a4ca3bdb7c0
     # local_signature = 3044022051b75c73198c6deee1a875871c3961832909acd297c6b908d59e3319e5185a46022055c419379c5051a78d00dbbce11b5b664a0c22815fbcc6fcef6b1937c3836939
     num_htlcs: 0
+
+
+
+
+commitment tx with three outputs untrimmed (minimum fee):
+
+    local_feerate_per_kw: 3703
+    # base commitment transaction fee = 3317
+    # actual commitment transaction fee = 11317
+    # HTLC 4 received amount 4000 wscript 76a91414011f7254d96b819c76986c277d115efce6f7b58763ac67210394854aa6eab5b2a8122cc726e9dded053a2184d88256816826d6231c068d4a5b7c8201208763a91418bc1a114ccf9c052d3d23e28d3b0a9d1227434288527c21030d417a46946384f88d5f3337267c5e579765875dc4daca813e21734b140639e752ae677502f801b175ac6868
+    # to_local amount 6984683 wscript 63210212a140cd0c6539d07cd08dfe09984dec3251ea808b892efeac3ede9402bf2b1967029000b2752103fd5960528dc152014952efdb702a88f71e3c1653b2314431701ec77e57fde83c68ac
+    # to_remote amount 3000000 P2WPKH(0394854aa6eab5b2a8122cc726e9dded053a2184d88256816826d6231c068d4a5b)
+    remote_signature = 30450221008b7c191dd46893b67b628e618d2dc8e81169d38bade310181ab77d7c94c6675e02203b4dd131fd7c9deb299560983dcdc485545c98f989f7ae8180c28289f9e6bdb0
+    # local_signature = 3044022047305531dd44391dce03ae20f8735005c615eb077a974edb0059ea1a311857d602202e0ed6972fbdd1e8cb542b06e0929bc41b2ddf236e04cb75edd56151f4197506
+    output commit_tx:
+
+
+
+commitment tx hex:
+
+    02000000000101bef67e4e2fb9ddeeb3461973cd4c62abb35050b1add772995b820b584a488489000000000038b02b8003a00f0000000000002200208c48d15160397c9731df9bc3b236656efb6665fbfe92b4a6878e88a499f741c4c0c62d0000000000160014ccf1af2f2aabee14bb40fa3851ab2301de843110eb936a00000000002200204adb4e2f00643db396dd120d4e7dc17625f5f2c11a40d857accc862d6b7dd80e0400473044022047305531dd44391dce03ae20f8735005c615eb077a974edb0059ea1a311857d602202e0ed6972fbdd1e8cb542b06e0929bc41b2ddf236e04cb75edd56151f4197506014830450221008b7c191dd46893b67b628e618d2dc8e81169d38bade310181ab77d7c94c6675e02203b4dd131fd7c9deb299560983dcdc485545c98f989f7ae8180c28289f9e6bdb001475221023da092f6980e58d2c037173180e9a465476026ee50f96695963e8efe436f54eb21030e9f7b623d2ccc7c9bd44d66d5ce21ce504c0acf6385a132cec6d3c39fa711c152ae3e195220
+
+commitment tx decoded:
+
+    {
+        "txid": "6d20ef35f1b05feeced43431bf4ba87e2204c93294f60dd160743dfba76a071c",
+        "hash": "eaf1db4d60e456678007df6189e6e74e24139d528ce2b0e83c90e78e0a00eae0",
+        "version": 2,
+        "size": 389,
+        "vsize": 224,
+        "weight": 893,
+        "locktime": 542251326,
+        "vin": [
+            {
+                "txid": "8984484a580b825b9972d7adb15050b3ab624ccd731946b3eeddb92f4e7ef6be",
+                "vout": 0,
+                "scriptSig": {
+                    "asm": "",
+                    "hex": ""
+                },
+                "txinwitness": [
+                    "",
+                    "3044022047305531dd44391dce03ae20f8735005c615eb077a974edb0059ea1a311857d602202e0ed6972fbdd1e8cb542b06e0929bc41b2ddf236e04cb75edd56151f419750601",
+                    "30450221008b7c191dd46893b67b628e618d2dc8e81169d38bade310181ab77d7c94c6675e02203b4dd131fd7c9deb299560983dcdc485545c98f989f7ae8180c28289f9e6bdb001",
+                    "5221023da092f6980e58d2c037173180e9a465476026ee50f96695963e8efe436f54eb21030e9f7b623d2ccc7c9bd44d66d5ce21ce504c0acf6385a132cec6d3c39fa711c152ae"
+                ],
+                "sequence": 2150346808
+            }
+        ],
+        "vout": [
+            {
+                "value": 0.00004,
+                "n": 0,
+                "scriptPubKey": {
+                    "asm": "0 8c48d15160397c9731df9bc3b236656efb6665fbfe92b4a6878e88a499f741c4",
+                    "hex": "00208c48d15160397c9731df9bc3b236656efb6665fbfe92b4a6878e88a499f741c4",
+                    "reqSigs": 1,
+                    "type": "witness_v0_scripthash",
+                    "addresses": [
+                        "bc1q33ydz5tq897fwvwln0pmydn9dmakve0ml6ftff5836y2fx0hg8zq3u2y54"
+                    ]
+                }
+            },
+            {
+                "value": 0.03,
+                "n": 1,
+                "scriptPubKey": {
+                    "asm": "0 ccf1af2f2aabee14bb40fa3851ab2301de843110",
+                    "hex": "0014ccf1af2f2aabee14bb40fa3851ab2301de843110",
+                    "reqSigs": 1,
+                    "type": "witness_v0_keyhash",
+                    "addresses": [
+                        "bc1qenc67te240hpfw6qlgu9r2erq80ggvgsaqzysf"
+                    ]
+                }
+            },
+            {
+                "value": 0.06984683,
+                "n": 2,
+                "scriptPubKey": {
+                    "asm": "0 4adb4e2f00643db396dd120d4e7dc17625f5f2c11a40d857accc862d6b7dd80e",
+                    "hex": "00204adb4e2f00643db396dd120d4e7dc17625f5f2c11a40d857accc862d6b7dd80e",
+                    "reqSigs": 1,
+                    "type": "witness_v0_scripthash",
+                    "addresses": [
+                        "bc1qftd5utcqvs7m89kazgx5ulwpwcjltukprfqds4avejrz66mamq8qshjans"
+                    ]
+                }
+            }
+        ]
+    }
+
+
+    num_htlcs: 1
+    # signature for output 0 (HTLC 4)
+    remote_htlc_signature = 3044022044f65cf833afdcb9d18795ca93f7230005777662539815b8a601eeb3e57129a902206a4bf3e53392affbba52640627defa8dc8af61c958c9e827b2798ab45828abdd
+    # local_signature = 3045022100b94d931a811b32eeb885c28ddcf999ae1981893b21dd1329929543fe87ce793002206370107fdd151c5f2384f9ceb71b3107c69c74c8ed5a28a94a4ab2d27d3b0724
+    output htlc_success_tx 4: 020000000001011c076aa7fb3d7460d10df69432c904227ea84bbf3134d4ceee5fb0f135ef206d0000000000000000000175050000000000002200204adb4e2f00643db396dd120d4e7dc17625f5f2c11a40d857accc862d6b7dd80e0500473044022044f65cf833afdcb9d18795ca93f7230005777662539815b8a601eeb3e57129a902206a4bf3e53392affbba52640627defa8dc8af61c958c9e827b2798ab45828abdd01483045022100b94d931a811b32eeb885c28ddcf999ae1981893b21dd1329929543fe87ce793002206370107fdd151c5f2384f9ceb71b3107c69c74c8ed5a28a94a4ab2d27d3b0724012004040404040404040404040404040404040404040404040404040404040404048a76a91414011f7254d96b819c76986c277d115efce6f7b58763ac67210394854aa6eab5b2a8122cc726e9dded053a2184d88256816826d6231c068d4a5b7c8201208763a91418bc1a114ccf9c052d3d23e28d3b0a9d1227434288527c21030d417a46946384f88d5f3337267c5e579765875dc4daca813e21734b140639e752ae677502f801b175ac686800000000
