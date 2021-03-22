@@ -22,7 +22,7 @@ The special member functions for a class `Widget` are:
 
 	- Usage: `w1 = w2;`
 
-* **Move constructor:** the constructor that takes an rvalue reference to another `Widget` and constructs a new object by moving it.
+* **Move constructor:** the constructor that constructs a new `Widget` by moving another (takes an rvalue reference).
 
 	- Definition: `Widget(Widget&& rhs);`
 
@@ -40,6 +40,19 @@ The special member functions for a class `Widget` are:
 
 	- Usage: `delete widget;`
 
+Maybe more readable:
+
+```c++
+class Widget {
+public:
+    Widget();                         // default constructor
+    Widget(const Widget&);            // copy ctor
+    Widget& operator=(const Widget&); // copy assignment
+    Widget(Widget&&);                 // move ctor
+    Widget& operator=(Widget&&);      // move assignment
+    ~Widget();                        // destructor
+};
+```
 
 
 Table for when special member functions are defined (rows = you declare, columns = compiler defines):
@@ -61,8 +74,8 @@ Noteworthy:
 - If you declare a copy function, the compiler won't create move stuff, because if you can't just do a memberwise copy, then move is probably different too.
 - If you declare ANY move function (constructor OR operator=), compiler will delete BOTH copy ones. It doesn't make sense for the compiler to define copy stuff if you made move stuff.
 - If you delcare just the copy constructor but not copy operator= or vice versa, the compiler still creates the one you didn't define. But this isn't the case for the move functions, it's both or neither.
-- Declaring a destructor means the compiler will not automatically generate move constructor and move operator=, so it can actually impact performance.
-
+- Declaring a destructor means the compiler will not automatically generate move constructor and move operator=, so it can actually impact performance if you had code using the default moves.
+- If you declare something and that causes something else to not be defined, you can still get the compiler to generate it for you by setting it `= default`.
 
 "**Rule of Three:**" you should declare all or none of: copy constructor, copy operator=, and destructor.
 
