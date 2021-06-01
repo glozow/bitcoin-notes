@@ -50,24 +50,9 @@ Limiting packages to size 2 also doesn't do much to limit the complexity.
 
 <img src="./images/package_mempool_examples.jpg" width="1000">
 
-Option 1: Go through and calculate the exact ancestor and descendant counts for
-every transaction in the package, combined.  The problem is that calculations
-can get pretty expensive, which is exactly what we were trying to avoid by
-having these limits in the first place.
+We want to be able to validate multiple transactions on top of the mempool, but also avoid these scenarios:
 
-Option 2: Create an overloaded version of `CalculateMemPoolAncestors()` that
-takes the whole package, and instead of calculating everyone's ancestors and
-descendants precisely, treat the package as one giant blob where each
-transaction treats all other in-package transaction as both an ancestor and a
-descendant.
-
-## Policy Differences in Packages vs Individal Transactions
-
-Rules applied to transactions in packages but not to individual transactions:
-
-1. Slightly stricter bounds on ancestor/descendant limits, as described above.
-
-2. Use descendant fee rate.
-
-3. Conflicts with mempool transactions are not allowed (no BIP125
-   replace-by-fee).
+- We underestimate the ancestors/descendants during package validation and end up with extremely
+  complex families in our mempool (potentially a DoS vector).
+- We expend an unreasonable amount of resources calculating everyone's ancestors and descendants
+  during package validation.
