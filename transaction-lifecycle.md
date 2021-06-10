@@ -1,5 +1,32 @@
 # Lifecycle of a Transaction
 
+## Table of Contents
+
+- [Lifecycle of a Transaction](#Lifecycle-of-a-Transaction)
+  - [Transaction Creation through Bitcoin Core Wallet](#Transaction-Creation-through-Bitcoin-Core-Wallet)
+    - [Wallet Parameters](#Wallet-Parameters)
+    - [Transaction Payload](#Transaction-Payload)
+    - [Coin Selection](#Coin-Selection)
+    - [Signing](#Signing)
+  - [Validation and Submission to Mempool](#Validation-and-Submission-to-Mempool)
+    - [Mempool Validation](#Mempool-Validation)
+      - [Context-Free Non-Script Checks](#Context-Free-Non-Script-Checks)
+      - [Contextual Non-Script Checks](#Contextual-Non-Script-Checks)
+      - [Signature and Script Checks](#Signature-and-Script-Checks)
+    - [Submission to Mempool](#Submission-to-Mempool)
+  - [P2P Transaction Relay](#P2P-Transaction-Relay)
+    - [Transaction Announcement and Broadcast](#Transaction-Announcement-and-Broadcast)
+    - [Transaction Request and Download](#Transaction-Request-and-Download)
+    - [Orphans](#Orphans)
+    - [Future Updates in Transaction Relay](#Future-Updates-in-Transaction-Relay)
+  - [Inclusion in a Block](#Inclusion-in-a-Block)
+    - [Mining](#Mining)
+    - [Block Relay](#Block-Relay)
+    - [Block Validation](#Block-Validation)
+    - [State Changes and Persistence to Disk](#State-Changes-and-Persistence-to-Disk)
+    - [Wallet Updates](#Wallet-Updates)
+    - [Transaction Children](#Transaction-Children)
+
 ## Transaction Creation through Bitcoin Core Wallet
 
 The process of creating a transaction does not need to be done on a node. Users can generate their
