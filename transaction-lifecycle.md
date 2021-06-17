@@ -360,4 +360,3 @@ a txid (i.e. after the transaction has been signed), including some limitations:
 * The Bitcoin Core wallet [may not consider the coins reliable enough to spend](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/wallet/spend.cpp#L102). For example, the coin
   selection algorithm never selects unconfirmed UTXOs that originate from foreign sources.
 * Transactions spending coinbase outputs are not considered consensus valid [until 100 blocks later](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/wallet/wallet.cpp#L2881).
-
