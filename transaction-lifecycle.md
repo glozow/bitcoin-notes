@@ -56,7 +56,7 @@ or "payment" outputs.  FIXME
 
 ### Coin Selection
 
-Relevant code: [src/wallet/coinselection.h](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/wallet/coinselection.h), [`CWallet::CreateTransactionInternal()`](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/wallet/spend.cpp#L571)
+Relevant code: [src/wallet/coinselection.h](https://doxygen.bitcoincore.org/coinselection_8h.html), [`CWallet::CreateTransactionInternal()`](https://doxygen.bitcoincore.org/class_c_wallet.html#a039a52a83b58db62d9c15d8371b9456e)
 
 The [transaction is "funded"](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/wallet/spend.cpp#L373) using a set of [UTXOs available](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/wallet/spend.cpp#L67) in the wallet; these comprise the inputs.
 A change output [may or may not be added](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/wallet/spend.cpp#L767-L778) to the transaction.  FIXME
@@ -77,7 +77,7 @@ known as [mempool _policy_](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0
 
 ### Mempool Validation
 
-Relevant code: [`MemPoolAccept`](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/validation.cpp#L426), [policy.h](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/policy/policy.h)
+Relevant code: [`MemPoolAccept`](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/validation.cpp#L426), [policy.h](https://doxygen.bitcoincore.org/policy_8h.html)
 
 Beyond applying consensus rules correctly, the primary consideration in mempool validation is DoS
 prevention. Malicious nodes can create fake transactions very cheaply (both monetarily and
@@ -101,7 +101,7 @@ transaction itself.
 
 #### Context-Free Non-Script Checks
 
-Relevant code: [`CheckTransaction()`](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/consensus/tx_check.cpp#L10)
+Relevant code: [`CheckTransaction()`](https://doxygen.bitcoincore.org/tx__check_8cpp.html#ac015dec2b8cac7f01b1f53b78a80d854)
 
 Mempoool validation in Bitcoin Core starts off with non-script checks (sometimes called [`PreChecks`](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/validation.cpp#L541),
 the name of the function in which these checks run).
@@ -133,15 +133,15 @@ performance) by creating invalid transactions spending random coins - remember t
 would be able to do this without providing a valid signature.
 
 Timelocks are also checked here - the node grabs the Median Time Past ([BIP113](https://github.com/bitcoin/bips/blob/master/bip-0113.mediawiki)) and/or block height
-at the current chainstate to check the transaction [`nLockTime`](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/validation.cpp#L206) and input(s) [`nSequence`](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/validation.cpp#L623). The node
+at the current chainstate to check the transaction [`nLockTime`](https://doxygen.bitcoincore.org/class_c_transaction.html#a54d5948c11f499b28276eab6bbfdf0c5) and input(s) [`nSequence`](https://doxygen.bitcoincore.org/class_c_tx_in.html#a635deeaf3ca4e8b3e1a97054607211b9). The node
 [freezes chainstate](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/validation.cpp#L1022) for the duration of this validation session to ensure those values don't change.
 Even if a new block (which could extend or invalidate the chain tip) arrives on the wire, the
 node won't process it until it has finished validating this transaction.
 
 #### Signature and Script Checks
 
-Relevant code: [src/script/interpreter.h](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/script/interpreter.h), [`CheckInputScripts()`](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/validation.cpp#L174), [`PrecomputedTransactionData`](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/script/interpreter.h#L147),
-[`g_scriptExecutionCache`](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/validation.cpp#L1370), [`CScriptCheck`](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/validation.h#L300), [`STANDARD_SCRIPT_VERIFY_FLAGS`](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/policy/policy.h#L60)
+Relevant code: [src/script/interpreter.h](https://doxygen.bitcoincore.org/interpreter_8h.html), [`CheckInputScripts()`](https://doxygen.bitcoincore.org/validation_8cpp.html#a6a96a3e1e6818904fdd5f51553b7ea60), [`PrecomputedTransactionData`](https://doxygen.bitcoincore.org/struct_precomputed_transaction_data.html),
+[`g_scriptExecutionCache`](https://doxygen.bitcoincore.org/validation_8cpp.html#ab821bded1c098da86bb13a4ac9d1208b), [`CScriptCheck`](https://doxygen.bitcoincore.org/class_c_script_check.html), [`STANDARD_SCRIPT_VERIFY_FLAGS`](https://doxygen.bitcoincore.org/policy_8h.html#ab28027bf27efcdd6535a13175a89ca5a)
 
 Transaction [script checks](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/validation.cpp#L1356) are actually context-free; the unlocking script ([`scriptSig`](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/validation.cpp#L1357),
 `redeemScript`, and [`witness`](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/validation.cpp#L1358)) in each input is paired with the locking script ([`scriptPubKey`](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/script/interpreter.cpp#L1979)) in
@@ -149,20 +149,20 @@ the [corresponding UTXO](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec
 [evaluates the series of opcodes](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/script/interpreter.cpp#L508) and data based only on the arguments passed to it. One such argument
 is a [set of script verification flags](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/validation.cpp#L922) indicating which rules to apply during script verification.
 
-For example, the [`OP_CHECKSEQUENCEVERIFY`](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/script/script.cpp#L134) opcode [repurposed](https://github.com/bitcoin/bips/blob/master/bip-0112.mediawiki) `OP_NOP3`. The script verification flag
-[`SCRIPT_VERIFY_CHECKSEQUENCEVERIFY`](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/script/interpreter.h#L102) instructs the script interpreter [to interpret](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/script/interpreter.cpp#L587) the opcode [`0xb2`](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/script/script.h#L191)
-as ["check that the input sequence is greater than the stack value"](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/script/interpreter.cpp#L1800) or as a no-op. At the BIP113
+For example, the [`OP_CHECKSEQUENCEVERIFY`](https://doxygen.bitcoincore.org/script_8h.html#a63e349a6089a54da9fe09a3d858648bdaff2d931584100152c5a1af8c875c3cb6) opcode [repurposed](https://github.com/bitcoin/bips/blob/master/bip-0112.mediawiki) `OP_NOP3`. The script verification flag
+[`SCRIPT_VERIFY_CHECKSEQUENCEVERIFY`](https://doxygen.bitcoincore.org/interpreter_8h.html#a05589fbab0657f08285ebdfe93f5ec9eaddf7dd85ffe0653f478d6888bcbe4021) instructs the script interpreter [to interpret](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/script/interpreter.cpp#L587) the opcode [`0xb2`](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/script/script.h#L191)
+as ["check that the input sequence is greater than the stack value"](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/script/interpreter.cpp#L1800) or as a no-op. At the [BIP113](https://github.com/bitcoin/bips/blob/master/bip-0113.mediawiki)
 activation height, [nodes pass](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/validation.cpp#L1695) `SCRIPT_VERIFY_CHECKSEQUENCEVERIFY=1` into the script interpreter.
 
 Another part of script validation is [signature verification](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/script/interpreter.cpp#L416) (indicated in a script by opcodes such
-as [`OP_CHECKSIGVERIFY`](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/script/interpreter.cpp#L1084)), which is the [most expensive](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/secp256k1/src/secp256k1.c#L424) part of transaction validation.
+as [`OP_CHECKSIGVERIFY`](https://doxygen.bitcoincore.org/script_8h.html#a63e349a6089a54da9fe09a3d858648bdaad934d053cc56be9612b2faa9f396eeb)), which is the [most expensive](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/secp256k1/src/secp256k1.c#L424) part of transaction validation.
 
 Transactions might have multiple [signatures](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/primitives/transaction.h#L69) on various parts of the transaction. For example,
 multiple parties might have contributed to funding the transaction, each signing on some combination
 of the outputs that they care about. Even in the most basic, single signature transaction, we need
 to [serialize and hash](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/script/interpreter.cpp#L1686) parts of the transaction according to the [sighash flag(s)](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/script/interpreter.h#L25-L35) used. To save the
 node from repetitive work, at the [very start of script checks](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/validation.cpp#L1442), subparts of the transaction are
-[serialized, hashed, and stored](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/script/interpreter.cpp#L1423) in a [`PrecomputedTransactionData`](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/script/interpreter.h#L147) struct for use in signature
+[serialized, hashed, and stored](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/script/interpreter.cpp#L1423) in a [`PrecomputedTransactionData`](https://doxygen.bitcoincore.org/struct_precomputed_transaction_data.html) struct for use in signature
 verification.
 
 [`MemPoolAccept`](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/validation.cpp#L426) performs two sets of script checks: [`PolicyScriptChecks`](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/validation.cpp#L917) and
@@ -177,19 +177,19 @@ specific script verification flags - result from [`PolicyScriptChecks`](https://
 
 ### Submission to Mempool
 
-Relevant code: [`MemPoolAccept::Finalize()`](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/validation.cpp#L974), [`CWallet::transactionAddedToMempool`](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/wallet/wallet.cpp#L1187)
+Relevant code: [`MemPoolAccept::Finalize()`](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/validation.cpp#L974), [`CWallet::transactionAddedToMempool`](https://doxygen.bitcoincore.org/group__map_wallet.html#gad8ca1601aff7d2ba2f7c39fa0ff8573e)
 
 
 [The mempool](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/txmempool.h#L566) primarily serves as a [size-limited cache](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/validation.cpp#L1013) of the best candidates for inclusion in the
 next block. Thus, transactions are evicted based on their [descendant feerate](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/txmempool.cpp#L1060).
 
-A transaction being added to the mempool is an event that implementers of [`ValidationInterface`](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/validationinterface.h#L78) are
+A transaction being added to the mempool is an event that implementers of [`ValidationInterface`](https://doxygen.bitcoincore.org/class_c_validation_interface.html) are
 [notified about](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/validation.cpp#L1046). If the transaction originated from the node's wallet, the [wallet notes](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/wallet/wallet.cpp#L1187) that it has
 been added to mempool.
 
 ## P2P Transaction Relay
 
-Relevant code: [`PeerManagerImpl::RelayTransaction()`](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/net_processing.cpp#L1602)
+Relevant code: [`PeerManagerImpl::RelayTransaction()`](https://doxygen.bitcoincore.org/class_peer_manager.html#a46d809bb4a782f3bb03dd6ccc89ab6cf)
 
 A node participating in transaction relay broadcasts [all of the transactions in its mempool](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/net_processing.cpp#L4632).
 The primary goal in transaction relay is to propagate transactions to every node in the network in a
@@ -210,7 +210,7 @@ message](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b48
 
 ### Transaction Announcement and Broadcast
 
-Relevant code: [`CTxMemPool::m_unbroadcast_txids`](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/txmempool.h#L586), [`PeerManagerImpl::ReattemptInitialBroadcast()`](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/net_processing.cpp#L1099)
+Relevant code: [`CTxMemPool::m_unbroadcast_txids`](https://doxygen.bitcoincore.org/class_c_tx_mem_pool.html#a3df5ff43adfe0f407daa6fdef8965ba8), [`PeerManagerImpl::ReattemptInitialBroadcast()`](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/net_processing.cpp#L1099)
 
 With respect to privacy in transaction relay, we specifically want to hide the origin (IP address)
 of a transaction. For each peer, nodes send a batch of transaction announcements at [random intervals](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/net_processing.cpp#L4584-L4588)
@@ -222,7 +222,7 @@ to a peer's mempool.
 
 ### Transaction Request and Download
 
-Relevant code: [PR#19988](https://github.com/bitcoin/bitcoin/pull/19988), [txrequest.h](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/txrequest.h)
+Relevant code: [PR#19988](https://github.com/bitcoin/bitcoin/pull/19988), [txrequest.h](https://doxygen.bitcoincore.org/txrequest_8h.html)
 
 Since a node typically has at least 8 peers relaying transactions (there are [8 full relay outbound
 connections](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/net.h#L62) even with inbounds disabled), it will likely [receive multiple announcements](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/net_processing.cpp#L2859), but only
@@ -243,7 +243,7 @@ sending the request.
 
 ### Orphans
 
-Relevant code: [src/txorphanage.h](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/txorphanage.h)
+Relevant code: [src/txorphanage.h](https://doxygen.bitcoincore.org/txorphanage_8h.html)
 
 FIXME: orphans
 
@@ -271,20 +271,20 @@ Proof of Work for) these blocks.
 
 ### Mining
 
-Relevant code: [src/miner.h](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/miner.h), [`BlockAssembler::CreateNewBlock()`](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/miner.cpp#L101)
+Relevant code: [src/miner.h](https://doxygen.bitcoincore.org/miner_8h.html), [`BlockAssembler::CreateNewBlock()`](https://doxygen.bitcoincore.org/class_block_assembler.html#acd45f01ed2556e805c82907def19efcb)
 
 Miners can start working on a block as soon as they [have the previous block hash](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/net_processing.cpp#L2846). The process of
 creating a new block might look something like this:
 
-1. The miner calls the Bitcoin Core RPC [`getblocktemplate`](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/rpc/mining.cpp#L515) to generate a block _template_ containing
+1. The miner calls the Bitcoin Core RPC [`getblocktemplate`](https://doxygen.bitcoincore.org/mining_8cpp.html#a55115d559f5dbfb0d7c56692cd2b69e4) to generate a block _template_ containing
    a consensus-valid set of transactions and header, just mising the nonce.
 
 2. The miner dispatches the block template to other hardware (perhaps a rack of ASICs, a cloud
    instance, or other nodes operated by mining pool members) dedicated to finding the nonce.
 
-3. If a solution is found, the miner calls [`submitblock`](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/rpc/mining.cpp#L951) to broadcast the new block.
+3. If a solution is found, the miner calls [`submitblock`](https://doxygen.bitcoincore.org/mining_8cpp.html#a5195db6e4464b7653c398ff7a362b21e) to broadcast the new block.
 
-Bitcoin Core's mining code (used by [`getblocktemplate`](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/rpc/mining.cpp#L515)) uses the mempool, [sorted by ancestor score](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/miner.cpp#L320)
+Bitcoin Core's mining code (used by [`getblocktemplate`](https://doxygen.bitcoincore.org/mining_8cpp.html#a55115d559f5dbfb0d7c56692cd2b69e4)) uses the mempool, [sorted by ancestor score](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/miner.cpp#L320)
 (ancestor feerate + manual prioritization by the miner), to determine which transactions to [include
 in the next block](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/miner.cpp#L226). This means a "package" consisting of a 5 sat/vB parent and 100 sat/vB child may
 get picked over a 20 sat/vB transaction, but not over a singular 100 sat/vB transaction with no
@@ -313,7 +313,7 @@ receiver does not recognize a transaction shortid, it [may request](https://gith
 
 ### Block Validation
 
-Relevant code: [`-par`](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/init.cpp#L395), [`g_scriptExecutionCache`](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/validation.cpp#L1370), [`CChainState::ActivateBestChain()`](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/validation.cpp#L2518)
+Relevant code: [`-par`](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/init.cpp#L395), [`g_scriptExecutionCache`](https://doxygen.bitcoincore.org/validation_8cpp.html#ab821bded1c098da86bb13a4ac9d1208b), [`CChainState::ActivateBestChain()`](https://doxygen.bitcoincore.org/class_c_chain_state.html#af771ed84553b1fb7269cfdfb54f66c48)
 
 FIXME: non-script checks
 
@@ -323,7 +323,7 @@ script checks again](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b
 
 ### State Changes and Persistence to Disk
 
-Relevant code: [src/undo.h](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/undo.h), [`CTxUndo`](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/undo.h#L53), [`SaveBlockToDisk()`](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/node/blockstorage.cpp#L460)
+Relevant code: [src/undo.h](https://doxygen.bitcoincore.org/undo_8h.html), [`CTxUndo`](https://doxygen.bitcoincore.org/class_c_tx_undo.html), [`SaveBlockToDisk()`](https://doxygen.bitcoincore.org/blockstorage_8cpp.html#ac821ccc511a43e5404cf9955156fde45)
 
 To fully validate new blocks, nodes only need to [store some representation of the current state](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/coins.cpp#L222) and
 knowledge of the current consensus rules. Archival nodes [store the entire block chain](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/node/blockstorage.cpp#L177) and can thus
@@ -340,10 +340,10 @@ process will also prune blocks by oldest-first to stay within limits.
 
 ### Wallet Updates
 
-Relevant code: [src/wallet/spend.h](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/wallet/spend.h), [`CWallet::blockConnected`](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/wallet/wallet.cpp#L1234)
+Relevant code: [src/wallet/spend.h](https://doxygen.bitcoincore.org/spend_8h.html), [`CWallet::blockConnected`](https://doxygen.bitcoincore.org/group__map_wallet.html#ga0cf4d454590b1513b967523c77f495ad)
 
 The Bitcoin Core wallet tracks incoming and outgoing transactions and subscribes to [major events](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/wallet/wallet.cpp#L1187-L1265) by
-implementing the node's `ValidationInterface`. The most relevant information for the wallet is which
+implementing the node's [`ValidationInterface`](https://doxygen.bitcoincore.org/class_c_validation_interface.html). The most relevant information for the wallet is which
 coins are available and how likely they are to remain spendable - this is quantified by the number
 of confirmations on the transaction (or on a [_conflicting_](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/wallet/transaction.h#L342) transaction, [represented as negative
 numbers](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/wallet/wallet.cpp#L1128)). A UTXO made available by a transaction 100 blocks deep in the most-work chain is
