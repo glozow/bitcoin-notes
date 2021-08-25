@@ -24,18 +24,21 @@
 - [After Consensus](#After-Consensus)
   - [State Changes and Persistence to Disk](#State-Changes-and-Persistence-to-Disk)
   - [Wallet Updates](#Wallet-Updates)
+  - [Conclusion](#Conclusion)
 
 ## Transaction Creation
 
 ### What is a Transaction?
 
-We can think of the Bitcoin network as a distributed state machine where state is (primarily) the
-current set of available coins, each listing an amount and scriptPubKey committing to some spending
-conditions, and the chain tip. A transaction represents an atomic state change redistributing
-existing coins (or minting new coins) from some old scriptPubKeys to new scriptPubKeys (which can
-also effectively burn them if committing to impossible spending conditions). The blockchain serves
-as a ledger (or journal) of ordered state changes batched into blocks, which can be used to
-reconstruct the UTXO set, aka chain state.
+We can think of the Bitcoin network as a distributed state machine where state is (primarily):
+
+- the current set of available coins (aka Unspent Transaction Outputs or UTXOs), each listing an amount
+and commitment to some spending conditions
+- the chain tip.
+
+A transaction represents an atomic state change redistributing existing coins or minting new coins.
+The blockchain serves as a ledger or journal of ordered state changes batched into blocks, which can
+be used to reconstruct the UTXO set, aka chain state.
 
 A transaction has metadata, inputs, outputs, and a witness (if any of its inputs spend segwit
 outputs). The process of creating a transaction does not need to be done on a node. For example,
@@ -48,15 +51,14 @@ transactions to their Bitcoin Core node via the
 The Bitcoin Core wallet also allows users to create transactions with varying levels of
 customization. The steps are roughly as follows:
 
-1. The wallet calculates feerate estimates,
-output types, and other options based on the user's input, pre-configured defaults and preferences,
-historical blocks and current mempool contents (queried from the node).
-
-2. A payee [provides an invoice or
-   destination](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/wallet/wallet.cpp#L2103)
-to pay to, committing to the spending conditions. This helps the wallet create
+1. A recipient provides an [invoice or destination](https://en.bitcoin.it/wiki/Invoice_address) to
+   pay to, committing to the spending conditions. This helps the wallet create
 [outputs](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/outputtype.h#L23-L26),
 which comprise the payments.
+
+2. The wallet calculates feerate estimates,
+output types, and other options based on the user's input, pre-configured defaults and preferences,
+historical blocks and current mempool contents queried from the node.
 
 3. The transaction is
     ["funded"](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/wallet/spend.cpp#L373)
@@ -66,22 +68,22 @@ available in the wallet; these comprise the inputs. A change output [may or may 
 added](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/wallet/spend.cpp#L767-L778)
 to the transaction.
 
-4. Some combination of signatures and/or scripts is added to each input to satisfy their
+4. Some combination of signatures and other data is added to each input to satisfy their
    corresponding outputs' spending conditions. This process involves various steps that depend on
 how many signatures are needed and where the key(s) are stored.
 
 ### Transaction Children
 
-A child transaction (one that spends another transaction's outputs) can be created as soon as the
-transaction has a txid - this can happen before it's even signed, which the Lightning Network takes
-advantage of to open payment channels without potentially locking counterparties into a multisig
-they can't get out of.
+A child transaction is one that spends another transaction's outputs. A child can be created as soon
+as the transaction has a txid - this can happen before it's even signed, which the Lightning Network
+takes advantage of to open payment channels without potentially locking counterparties into a
+multisig they can't get out of.
 
 It's possible - and quite common - for transactions to have children and grandchildren before they
-are confirmed (included in a valid block accepted by the network).  There's nothing stopping a user
-from creating 1000 generations of transactions. One can also create multiple children from the same
-output, but these would be considered conflicting transactions. There are no limitations on what
-transactions a user can create, but the network state is what matters.
+are confirmed. There's nothing stopping a user from creating 1000 generations of transactions. One
+can also create multiple children from the same output, but these would be considered conflicting
+transactions or "double spends." There are no limitations on what transactions a user can create,
+but the network state is what matters.
 
 Among other limitations on validity, children of coinbase transactions would need to wait [100
 blocks](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/wallet/wallet.cpp#L2881)
@@ -101,9 +103,14 @@ cache of unconfirmed transactions to help select transactions for inclusion in a
 and manual miner prioritization. For non-mining nodes, keeping a mempool allows for fee estimation,
 helps increase block validation performance, and aids in transaction relay.
 
-Transaction relay is meant to contribute to the censorship-resistance and decentralization of the
-network; while the easiest way to get your transaction mined is to submit it directly to your miner
-friend, any node on the network should be able to broadcast their transactions without special
+Transaction relay contributes to the censorship-resistance, privacy and decentralization of the
+network. We can imagine a simple system where users submit their transactions directly to miners,
+similar to many software services in which users visit a website hosted on servers controlled by a
+few companies. However, the miners in this system - and, by extension, governments and organizations
+which can bribe or exert legal pressure on them - can trivially identify transaction origins
+and censor users.
+
+In the Bitcoin network, we want any node to be able to broadcast their transactions without special
 permissions or unreasonable fees. However, the permissionless nature of the P2P network also means
 that nodes are exposing their computational resources to peers that may try to abuse them.
 Malicious nodes can create fake transactions very cheaply (both monetarily and computationally);
@@ -111,10 +118,11 @@ there are no Proof of Work requirements on transactions.
 
 ### Mempool Validation
 
-Selecting the best transactions for the resource-constrained mempool involves a tradeoff between
-applying consensus rules correctly and protecting the node from DoS attacks. As such, apply a set of
-validation rules known as mempool _policy_ (also sometimes called "standardness" or "non-mandatory"
-rules) in addition to consensus.
+The purpose of the mempool is to store the highest fee (most incentive-compatible for miners)
+candidates for inclusion in a block.  Selecting the best transactions for the resource-constrained
+mempool involves a tradeoff between optimistically validating candidates to identify the highest
+feerate ones and protecting the node from DoS attacks. As such, we apply a set of validation rules
+known as mempool _policy_ in addition to consensus.
 
 We might categorize transaction validation checks in a few different ways:
 
@@ -127,10 +135,11 @@ to avoid making mempool logic consensus-critical.
 script checking (specifically, signature verification) is the most computationally intensive part of
 transaction validation.
 
-- Contextual vs Context-Free: The context refers to the current network state, represented as
+- Contextual vs Context-Free: The context refers to our knowledge of the current state, represented as
   [ChainState](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/validation.h#L566).
-Contextual checks might require the current block height or knowledge of the current UTXO set, while
-context-free checks only need the transaction itself.
+Contextual checks might require the current block height or knowledge of the current UTXO set,
+while context-free checks only need the transaction itself. We also need to look into our mempool to
+validate a transaction that spends or conflicts with another transaction already in our mempool.
 
 #### Context-Free Non-Script Checks
 
@@ -145,8 +154,7 @@ Here are some examples:
   BTC](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/consensus/tx_check.cpp#L25-L27).
 
 - The transaction [isn't a
-  coinbase](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/validation.cpp#L568)
-- there can't be any coinbase transactions outside of blocks.
+  coinbase](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/validation.cpp#L568), as there can't be any coinbase transactions outside of blocks.
 
 - The transaction isn't [more than 400,000 weight
   units](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/policy/policy.cpp#L88).
@@ -156,10 +164,10 @@ sending very large transactions that are later conflicted out by blocks.
 
 #### Contextual Non-Script Checks
 
-Perhaps the most obvious non-script consensus check here is to [make sure the inputs are
+Perhaps the most obvious non-script contextual check here is to [make sure the inputs are
 available](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/validation.cpp#L641-L662),
 either in the current chainstate or as an output of an in-mempool transaction. Each input in the
-transaction must refer to a UTXO created by previous transaction by their txid and index in the
+transaction must refer to a UTXO by previous transaction using its txid and index in the
 output vector. Rather than looking through the entire blockchain (hundreds of gigabytes stored on
 disk), Bitcoin Core nodes keep a [layered
 cache](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/validation.h#L517-L541)
@@ -168,9 +176,7 @@ of the available
 (a few gigabytes, much of which can be kept in memory). To make this process more efficient, coins
 fetched from disk during mempool validation are [kept in
 memory](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/validation.cpp#L1116-L1124)
-if the transaction is accepted to the mempool. This prevents a peer from thrashing the coins cache
-(also bottlenecking block validation performance) by creating invalid transactions spending random
-coins - remember that malicious nodes would be able to send these without spending any money.
+if the transaction is accepted to the mempool.
 
 Timelocks are also checked here - the node grabs the Median Time Past
 ([BIP113](https://github.com/bitcoin/bips/blob/master/bip-0113.mediawiki)) and/or block height at
@@ -178,6 +184,8 @@ the current chainstate to check transaction
 [`nLockTime`](https://doxygen.bitcoincore.org/class_c_transaction.html#a54d5948c11f499b28276eab6bbfdf0c5)
 and input
 [`nSequence`](https://doxygen.bitcoincore.org/class_c_tx_in.html#a635deeaf3ca4e8b3e1a97054607211b9).
+
+#### Synchronization in Validation
 
 What happens if a new block arrives on the wire while we're in the middle of validating this
 transaction? It would be unsafe for the wallet to submit transactions to the mempool while
@@ -200,37 +208,35 @@ in the [corresponding
 UTXO](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/validation.cpp#L1469)
 and passed into the script interpreter. The [script
 interpreter](https://doxygen.bitcoincore.org/interpreter_8h.html) simply evaluates the series of
-opcodes and data based on the arguments passed to it. One such argument is a set of [script
+opcodes and data based on the arguments passed to it.
+
+One such argument is a set of [script
 verification
 flags](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/script/interpreter.h#L42-L143)
-indicating which rules to apply during script verification.
-
-For example, the `OP_CHECKSEQUENCEVERIFY` opcode
+indicating which rules to apply during script verification. For example, the `OP_CHECKSEQUENCEVERIFY` opcode
 [repurposed](https://github.com/bitcoin/bips/blob/master/bip-0112.mediawiki) `OP_NOP3`. The script
 verification flag `SCRIPT_VERIFY_CHECKSEQUENCEVERIFY` instructs the script interpreter [to
 interpret](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/script/interpreter.cpp#L587)
 the opcode `0xb2` as the instruction to
 [check](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/script/interpreter.cpp#L1760)
-that the input's `nSequence` is greater than the stack value or as a no-op. At the BIP112 activation
+that the input's `nSequence` is greater than the stack value or as a no-op. Starting at the BIP112 activation
 height, [nodes
 pass](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/validation.cpp#L1695-L1697)
 `SCRIPT_VERIFY_CHECKSEQUENCEVERIFY=1` into the script interpreter.
 
 Another part of script validation is signature verification (indicated in a script by opcodes such
-as `OP_CHECKSIGVERIFY`. Transactions might have multiple signatures on various parts of the transaction. For example,
-multiple parties might have contributed to funding the transaction, each signing some combination of
-the inputs and/or outputs that they care about. Even in the most basic, single signature
+as `OP_CHECKSIG`. Transactions might have multiple signatures commiting to different combinations of
+transaction inputs and outputs. Even in the most basic, single signature
 transaction, we need to serialize and hash parts of the transaction (based on the [sighash
 flag(s)](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/script/interpreter.h#L25-L35)
 specified for each signature). To save the node from repetitive work, at the very start of
-script checks, subparts of the transaction are [serialized, hashed, and
+script checks, parts of the transaction are [serialized, hashed, and
 stored](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/script/interpreter.cpp#L1423)
 in a
 [`PrecomputedTransactionData`](https://doxygen.bitcoincore.org/struct_precomputed_transaction_data.html)
 struct for use in signature verification.
 
-[`MemPoolAccept`](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/validation.cpp#L426)
-performs two sets of script checks:
+Mempool validation performs two sets of script checks:
 [`PolicyScriptChecks`](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/validation.cpp#L917)
 and
 [`ConsensusScriptChecks`](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/validation.cpp#L943).
@@ -239,19 +245,16 @@ interpreter](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed8
 using [consensus and policy
 flags](https://doxygen.bitcoincore.org/policy_8h.html#ab28027bf27efcdd6535a13175a89ca5a) and caches
 the signature result (if successful) in the [signature
-cache](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/script/sigcache.cpp#L90).
+cache](https://github.com/bitcoin/bitcoin/blob/d67330d11245b11fbdd5e2dd5343ee451186931e/src/script/sigcache.cpp#L21-L26).
 The latter runs the script interpreter using [consensus flags
 only](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/validation.cpp#L965)
 and [caches the full validation
 result](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/validation.cpp#L1490),
-identified by the wtxid and script verification flags (if a new consensus rule
+identified by the wtxid and script verification flags. If a new consensus rule
 is activated between now and the block in which this transaction is included, the cached result is
-no longer valid, but this is easily detected based on the script verification flags). The cached
-signature verification result from
-[`PolicyScriptChecks`](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/validation.cpp#L917)
-can be used immediately in
-[`ConsensusScriptChecks`](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/validation.cpp#L943);
-we almost never need to verify the same signature more than once!
+no longer valid, but this is easily detected based on the script verification flags. The cached
+signature verification result from `PolicyScriptChecks` can be used immediately in
+`ConsensusScriptChecks`; we almost never need to verify the same signature more than once!
 
 ### Submission to Mempool
 
@@ -262,8 +265,8 @@ the metadata is devoted to keeping track of a transaction's in-mempool ancestors
 of parents, etc.) and descendants (children, children of children, etc.) and their aggregated fees.
 
 A transaction is only valid if its ancestors exist: a transaction can't be mined unless its parents
-are mined, and its parents can't be mined unless their parents are mined, etc. Conversely, if a
-transaction is evicted from the mempool, its descendants must be too. Thus, a transaction's
+are mined, and its parents can't be mined unless their parents are mined, and so on. Conversely, if a
+transaction is evicted from the mempool, its descendants must be too. A transaction's
 effective feerate is not just its base feerate divided by weight, but that of itself and all of its
 ancestors. This information is also taken into account when the mempool fills up and the node must
 choose which transactions to evict (also based on fees). Of course, all of this information can be
@@ -273,78 +276,86 @@ trees (actually, directed acyclic graphs) can get quite hairy and a source of re
 so one part of mempool policy is to limit individual transactions' connectivity.
 
 A transaction being added to the mempool is an event that clients of
-[`ValidationInterface`](https://doxygen.bitcoincore.org/class_c_validation_interface.html) are
+[`ValidationInterface`](https://doxygen.bitcoincore.org/class_c_validation_interface.html) may be
 [notified
-about](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/validation.cpp#L1046).
-If the transaction originated from the node's wallet, the [wallet
+about](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/validation.cpp#L1046)
+if they subscribed to the `TransactionAddedToMempool()` event. If the transaction originated from
+the node's wallet, the [wallet
 notes](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/wallet/wallet.cpp#L1187)
 that it has been added to mempool.
 
 ## P2P Transaction Relay
 
-A node participating in transaction relay broadcasts all of the transactions in its mempool. The
-goal in transaction relay is to propagate all valid candidates for inclusion in a block to every
-node in the network in a timely manner, while making an effort to conceal transaction origins and. We
-consider a few second-delay acceptable if it helps obfuscate transaction origins and avoids clogging
-up the network with redundant transaction messages.
+A node participating in transaction relay announces all of the transactions in its mempool. The goal
+in transaction relay is to propagate all valid candidates for inclusion in a block to every node in
+the network in a timely manner, while making an effort to conceal transaction origins and not reveal
+the exact contents of our mempool. We consider a delay of a few seconds acceptable if it helps
+obfuscate some information and avoid clogging up the network with redundant transaction messages.
 
-Technically, the Bitcoin P2P protocol specifies that transactions are communicated using a [`TX`
-message](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/protocol.h#L121).
+Technically, the Bitcoin P2P protocol specifies that transactions are communicated using a [`tx`
+message](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/protocol.h#L118-121).
 Most nodes relay transactions using a three-part dialogue:
 
-1. The sender sends an [`INV`
-   (Inventory)](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/net_processing.cpp#L4571)
+1. The sender sends an [`inv`
+   (Inventory)](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/net_processing.cpp#L4650)
 announcing the new transaction by its txid or wtxid.
 
 2. Nodes [manage](https://doxygen.bitcoincore.org/class_tx_request_tracker.html) various
    transaction announcements from peers to decide which transactions they are interested in and
 which peer(s) to request them from. To request a transaction, a node sends a
-[`GETDATA`](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/protocol.h#L100)
+[`getdata`](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/protocol.h#L97-100)
 message to a peer with a list of transactions identified by txid or wtxid.
 
 3. The sender [responds to
-   `GETDATA`s](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/net_processing.cpp#L1876-L1906)
-by sending the full transaction in a `TX` message.
-
-[Erlay](https://bitcoinops.org/en/topics/erlay/) would also introduce an additional method of
-transaction relay.
+   `getdata`s](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/net_processing.cpp#L1876-L1906)
+by sending the full transaction in a `tx` message.
 
 ### Transaction Announcement and Broadcast
 
-With respect to privacy in transaction relay, we specifically want to hide the origin (IP address)
-of a transaction. For each peer, nodes send a batch of transaction announcements at [random
+With respect to privacy in transaction relay, we specifically want to hide the origin (by network
+address) of a transaction. We also want to prevent peers from probing the exact contents of our
+mempool or learn when a transaction enters our mempool, which is information that can be used to
+trace transaction propagation. For each peer, nodes send a batch of transaction announcements at
+[random
 intervals](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/net_processing.cpp#L4584-L4588)
 (poisson timer with 2-second average for outbound peers and 5-second average for inbound peers).
+This decreases the precision with which peers can learn the time we first accepted a transaction to
+our mempool by probing us with `getdata`s.
 
-Upon broadcasting a transaction for the first time, Bitcoin Core nodes store them in an
-[_unbroadcast_](https://doxygen.bitcoincore.org/class_c_tx_mem_pool.html#a3df5ff43adfe0f407daa6fdef8965ba8)
-set and rebroadcast them periodically until they see an `GETDATA` for it.
+A transaction might need to be rebroadcasted if propagation fails for some reason - this could be
+anything from censorship to simple spurious network failures.  We might imagine rebroadcast to be
+the responsibility of the transaction owner's node, but the behavior of treating our own
+transactions differently from others' constitutes a privacy leak. Bitcoin Core nodes attempt to aid
+initial broadcast for _all_ transactions by tracking the set of ["unbroadcast"
+transactions](https://doxygen.bitcoincore.org/class_c_tx_mem_pool.html#a3df5ff43adfe0f407daa6fdef8965ba8)
+and rebroadcasting them periodically until they see `getdata` for it.
 
 ### Transaction Request and Download
 
 Since a node typically has several peers relaying transactions, it will likely receive multiple
-announcements for the same transaction, but only requests it from one peer at a time to avoid
-redundant network traffic. At the same time, it's possible for a request to fail. A peer might evict
-the transaction from their mempool, take too long to respond, terminate the connection, etc.
-Malicious nodes may also try to take advantage of flaws in the transaction request logic to censor
-or stall a transaction from being propagated to miners. In these cases, nodes must remember which
-other peers announced the same transaction in order to re-request it.
+announcements for the same transaction. To avoid redundant network traffic, nodes only request a
+transaction from one peer at a time. However, it's also possible for a request to fail. A peer might
+evict the transaction from their mempool, take too long to respond, terminate the connection, or
+respond with garbage. Malicious nodes may also try to take advantage of flaws in the transaction
+request logic to censor or stall its propagataion to miners. In these cases, nodes must remember
+which other peers announced the same transaction in order to re-request it.
 
-Rather than responding to transaction `INV`s with `GETDATA`s immediately, nodes [store all the
+Rather than responding to transaction `inv`s with `getdata`s immediately, the node [stores all the
 announcements
 received](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/net_processing.cpp#L2859),
-batching ones corresponding to the same transaction, selecting the best candidate to request the
-transaction from based on connection type and how many requests are already in flight to a specific
+batches them by txid/wtxid, and then selects the best candidate to request the
+transaction from based on connection type and how many requests are already in flight to each
 peer. Nodes [prefer to
 download](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/net_processing.cpp#L1053-L1066)
-from manual connections, outbound connections, and peers using WTXID relay. If the first
-announcement(s) to arrive are from non-preferred peers, the node waits for other peers to announce
-the same transaction for a short period of time (several seconds) before sending the request.
+from manual connections, outbound connections, and peers using [wtxid
+relay](https://github.com/bitcoin/bips/blob/master/bip-0339.mediawiki). If the first
+announcement(s) to arrive are from non-preferred peers, the node waits a few seconds before sending
+the request to give other, preferred peers time to announce the same transaction.
 
 ### Orphans
 
 Occasionally, a node may receive a transaction spending input(s) that don't seem to exist. Perhaps
-the inputs are invalid garbage, but perhaps the node just hasn't heard about the parent
+the inputs don't exist, but perhaps the node just hasn't heard about the parent
 transaction(s) yet; transactions are not guaranteed to propagate in order. Since it's impossible to
 distinguish between the two scenarios, the node optimistically requests unknown parents from the
 originating node and stores the transaction in an [orphan
@@ -354,10 +365,10 @@ pool](https://doxygen.bitcoincore.org/txorphanage_8h.html) for a while.
 
 A signature indicates that the owner of the private key has agreed to spend the coins, but the
 transaction is merely a _proposed_ state change until there is network consensus that the coins have
-been sent - it is trivially cheap for a private key owner to sign multiple transactions sending the
+been sent. It is trivially cheap for a private key owner to sign multiple transactions sending the
 same coins. In Bitcoin, the consensus protocol requires transactions to be included in a block
-containing a valid Proof of Work and accepted by the network as part of the most-work chain - it is
-prohibitively expensive for a private key owner to reverse a transaction by rewriting (i.e.
+containing a valid Proof of Work solution and accepted by the network as part of the most-work chain
+- it is prohibitively expensive for a private key owner to reverse a transaction by rewriting (i.e.
 recomputing Proofs of Work for) these blocks.
 
 ### Mining
@@ -367,24 +378,18 @@ creating a new block might look something like this:
 
 1. The miner calls the Bitcoin Core RPC
    [`getblocktemplate`](https://developer.bitcoin.org/reference/rpc/getblocktemplate.html) to
-generate a block
-[_template_](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/miner.h#L28-L34)
-containing a consensus-valid set of transactions and header, just mising the nonce.
+determine the best set of transactions from the mempool that fit into a block's [weight and sigop
+limits](https://github.com/bitcoin/bitcoin/blob/7fcf53f7b4524572d1d0c9a5fdc388e87eb02416/src/consensus/consensus.h#L14-L17).
+This generates a [_block template_](https://github.com/bitcoin/bips/blob/master/bip-0022.mediawiki)
+containing a consensus-valid set of transactions and block header, just mising the nonce.
 
-2. The miner dispatches the block template to other hardware (perhaps a dedicated rack of ASICs, a
-   cloud instance, or other nodes operated by mining pool members) dedicated to finding the nonce.
+2. The miner uses the block template to dispatch work tasks to other hardware (a dedicated rack of
+   ASICs, a cloud instance, or other nodes op,erated by mining pool members) dedicated to finding the
+nonce. "Mining" typically refers to this task of guessing the nonce, specifically.
 
 3. If a solution is found, the miner calls
    [`submitblock`](https://developer.bitcoin.org/reference/rpc/submitblock.html) to submit the block
 to their node and broadcast it.
-
-Bitcoin Core's [`BlockAssembler`](https://doxygen.bitcoincore.org/class_block_assembler.html)
-(invoked by `getblocktemplate`) uses the mempool, sorted by ancestor score (ancestor feerate
-including manual
-[prioritization](https://developer.bitcoin.org/reference/rpc/prioritisetransaction.html) by the
-miner), to determine which transactions to include in the next block.  This means a "package"
-consisting of a 5 sat/vB parent and 100 sat/vB child may get picked over a 20 sat/vB transaction,
-but not over a singular 100 sat/vB transaction with no dependencies.
 
 ### Block Relay
 
@@ -394,62 +399,69 @@ the network. One part of this is block relay (measured by the latency between tw
 other is block validation performance. Hiding the origin of a block is not a concern, so there are
 no delays in block propagation.
 
-Blocks can contain megabytes worth of transactions; block propagation by flooding would cause huge
-spikes in network traffic. Nodes that keep a mempool have typically seen [the vast
-majority](https://www.youtube.com/watch?v=EHIuuKCm53o) of block transactions already. At the same
-time, using the `INV`/`GETDATA` dialogue can needlessly lengthen the latency of block propagation.
+Blocks can contain megabytes worth of transactions, so block propagation by flooding would cause
+huge spikes in network traffic. We also know that nodes that keep a mempool have typically seen [the
+vast majority](https://www.youtube.com/watch?v=EHIuuKCm53o) of block transactions already. This
+suggests we should use the `inv`/`getdata` dialogue similar to transaction relay, where data is only
+sent to peers who request them, but this would significantly lengthen the latency of block propagation.
 
-The Bitcoin P2P protocol specifies a few different ways of communicating blocks. Each individual
+The Bitcoin P2P protocol specifies a few different ways of communicating blocks, and each individual
 node typically uses some combination of them. Peers negotiate which block relay communication method
-to use when initially establishing the connection.
+to use when they initially establishing the connection.
 
-Bitcoin Core nodes select up to three peers as High Bandwidth Compact Block peers to send compact
-blocks directly.
-[BIP152](https://github.com/bitcoin/bips/blob/master/bip-0152.mediawiki) compact blocks contain
+- Headers-First Sync: Since v0.10, Bitcoin Core nodes [sync
+  headers-first](https://github.com/bitcoin/bitcoin/pull/4468), optimistically accepting 80-byte
+headers bytes to build their block chain (technically, tree, since forks, stale blocks, and invalid
+blocks are possible). After validating a block
+header, the recipient can request the rest of the
+[block](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/net_processing.cpp#L2093).
+
+- `inv`/`getdata` dialogue: This works very similarly to the transaction relay dialogue.
+  Announcements are sent using `inv` messages, and peers may request blocks by hash using `getdata`.
+
+- Compact Blocks: [BIP152](https://github.com/bitcoin/bips/blob/master/bip-0152.mediawiki) compact blocks contain
 only the block header, prefilled coinbase transaction, and shortids for all other transactions. If
 the receiver does not recognize a transaction shortid, it [may
 request](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/net_processing.cpp#L3434)
-it through `GETBLOCKTXN`.
+it through `getblocktxn`.
 
-Since v0.10, Bitcoin Core nodes [sync
-headers-first](https://github.com/bitcoin/bitcoin/pull/4468), optimistically accepting headers (80
-bytes each) to build their block chain (technically, tree, since forks, stale blocks, and invalid
-blocks are possible). As such, block validation and download overlap slightly since a few checks are
-done in between downloading block headers and the rest of the block.
-
-After validating a block header, the recipient can request a [full
-block](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/net_processing.cpp#L2093)
-or [compact
-block](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/net_processing.cpp#L2107).
+  - Nodes can request a compact block instead of a full block in an `inv`/`getdata` dialogue, or
+    following block header validation.
+  - Additionally, Bitcoin Core nodes select up to three peers as High Bandwidth Compact Block peers
+    from which they wish to receive compact blocks directly, i.e., without waiting for an
+announcement and request. Nodes serving high bandwidth compact blocks will also expedite this even
+further by sending them as soon as they see a valid Proof of Work solution, before validating the
+block's transactions.
 
 
 ### Block Validation
 
-Since v0.8, Bitcoin Core nodes have used a UTXO set rather than blockchain lookups to represent
-state and validate transactions.  To fully validate new blocks, nodes only need to consult their
-UTXO set and knowledge of the current consensus rules. Since consensus rules depend on block height
-and time (both of which can decrease in a reorg), the they are recalculated for each block prior
-to validation. Regardless of whether or not transactions have already been previously validated and
-accepted to the mempool, nodes check block-wide (e.g. [total sigop
+Since v0.8, Bitcoin Core nodes have used a [UTXO set](https://github.com/bitcoin/bitcoin/pull/1677)
+rather than blockchain lookups to represent state and validate transactions.  To fully validate new
+blocks, nodes only need to consult their UTXO set and knowledge of the current consensus rules.
+Since consensus rules depend on block height and time (both of which can decrease in a reorg),
+they are recalculated for each block prior to validation. Regardless of whether or not transactions
+have already been previously validated and accepted to the mempool, nodes check block-wide consensus
+rules (e.g. [total sigop
 cost](https://github.com/bitcoin/bitcoin/blob/9df1906091f84d9a3a2e953a0424a88e0931ea33/src/validation.cpp#L1935),
 [duplicate
 transactions](https://github.com/bitcoin/bitcoin/blob/9df1906091f84d9a3a2e953a0424a88e0931ea33/src/validation.cpp#L1778-L1866),
 [timestamps](https://github.com/bitcoin/bitcoin/blob/9df1906091f84d9a3a2e953a0424a88e0931ea33/src/validation.cpp#L3172-L3179),
+[witness
+commitments](https://github.com/bitcoin/bitcoin/blob/9df1906091f84d9a3a2e953a0424a88e0931ea33/src/validation.cpp#L3229-L3255),
 [block subsidy
 amount](https://github.com/bitcoin/bitcoin/blob/9df1906091f84d9a3a2e953a0424a88e0931ea33/src/validation.cpp#L1965-L1969))
-and transaction-wide (e.g. [witness
-commitments](https://github.com/bitcoin/bitcoin/blob/9df1906091f84d9a3a2e953a0424a88e0931ea33/src/validation.cpp#L3229-L3255),
-availability of inputs, and [input
+and transaction-wide consensus rules (e.g. availability of inputs, locktimes, and [input
 scripts](https://github.com/bitcoin/bitcoin/blob/9df1906091f84d9a3a2e953a0424a88e0931ea33/src/validation.cpp#L1946))
-consensus rules for each block.
+for each block.
 
 Script checking is parallelized in block validation. Block transactions are checked in order (and
-coins set updated which allows for dependencies within the block), and their individual input script
-checks [added to a work
+coins set updated which allows for dependencies within the block), but input script
+checks are parallelizable. They are added to a [work
 queue](https://github.com/bitcoin/bitcoin/blob/9df1906091f84d9a3a2e953a0424a88e0931ea33/src/validation.cpp#L1887)
-that runs on a different set of independent threads while block validation continues. While failures
-should be rare (creating a valid proof of work for an invalid block is quite expensive), any
-consensus failure on a transaction invalidates the entire block, so no state changes are saved
+delegated to a set of threads while the main validation thread is working on other things. While
+failures should be rare - creating a valid proof of work for an invalid block is quite expensive -
+any consensus failure on a transaction invalidates the entire block, so no state changes are saved
 until these threads successfully complete.
 
 If the node already validated a transaction before it was included in a block, no consensus rules
@@ -478,43 +490,56 @@ more work.
 
 ### State Changes and Persistence to Disk
 
-Since historical block data is not needed regularly and quite large, it is stored on disk and
-fetched if needed.  If configured by the user, the node keeps an
-[index](https://doxygen.bitcoincore.org/class_tx_index.html) of transactions to quickly look up
-their locations on disk. Additionally, the node should be prepared for a reorg - the block may
-become stale if a new most-work chain is found, and the changes to the UTXO set will need to be
-undone. As such, every block has a set of corresponding [undo
+Since historical block data is not needed regularly and is quite large, it is stored on disk and
+only fetched when needed. The node keeps an
+[index](https://doxygen.bitcoincore.org/class_c_block_index.html) to quickly look up their locations
+on disk by hash. Additionally, the node should be prepared for a reorg - the block may become stale
+if a new most-work chain is found, and the changes to the UTXO set will need to be undone. As such,
+every block has a set of corresponding [undo
 data](https://doxygen.bitcoincore.org/class_c_block_undo.html).
 
 Blocks and undo data are persisted to disk in the `blocks/` directory. Each `blkNNNNN.dat` file stores
-raw block data, and its corresponding undo data is stored in a `revNNNNN.dat` file
-in the same directory. If the node operator has configured a maximum memory allocation for this
-node, this process will also prune blocks by oldest-first to stay within limits.
+raw block data, and its corresponding undo data is stored in a `revNNNNN.dat` file in the same
+directory. If the node operator has configured a maximum disk space for old blocks, this process
+will also [automatically prune](https://github.com/bitcoin/bitcoin/pull/5863) blocks by oldest-first
+to stay within limits.
 
 While the UTXO set is comparatively smaller than the block chain, it doesn't always fit in memory.
-A node's [view of available coins]() is implemented in layers of maps from outpoints to
-scriptPubKeys. Every validation session (for both [block
+A node's view of available coins is implemented in
+[layers](https://github.com/bitcoin/bitcoin/blob/21438d55d553ae5bf3be7c0d4431aaf136db6c6b/src/validation.h#L505)
+of
+[maps](https://github.com/bitcoin/bitcoin/blob/21438d55d553ae5bf3be7c0d4431aaf136db6c6b/src/coins.h#L157)
+from
+[outpoints](https://github.com/bitcoin/bitcoin/blob/774a4f517cf63df345e6a4852cc0b135b0a9ab76/src/primitives/transaction.h#L26)
+to
+[coins](https://github.com/bitcoin/bitcoin/blob/774a4f517cf63df345e6a4852cc0b135b0a9ab76/src/coins.h#L30).
+Every validation session (for both [block
 validation](https://github.com/bitcoin/bitcoin/blob/6312b8370c5d3d9fb12eab992e3a32176d68f006/src/validation.cpp#L2380)
 on top of the current tip and unconfirmed [transaction
 validation](https://github.com/bitcoin/bitcoin/blob/6312b8370c5d3d9fb12eab992e3a32176d68f006/src/validation.cpp#L427)
-on top of current chainstate and mempool) creates a temporary view of the state and flushes
-it to the appropriate view.
+on top of current chainstate and mempool) creates a temporary view of the state and flushes it to
+the appropriate view.
 
 ### Wallet Updates
 
 The Bitcoin Core wallet tracks incoming and outgoing transactions and subscribes to major events by
 [implementing](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/wallet/wallet.cpp#L1187-L1265)
-the node's `ValidationInterface`. The most relevant information for the wallet is which of its own
-coins are available and how likely they are to remain spendable - this is quantified by the
+the node's
+[`ValidationInterface`](https://github.com/bitcoin/bitcoin/blob/3d9cdb16897bf5f5eed525fd3fbc07e57dbe5f54/src/validationinterface.h#L63-L177).
+The most relevant information for the wallet is which of [its own
+coins](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/wallet/wallet.cpp#L1296-L1330)
+are available and how likely they are to remain spendable, measured by the
 [number](https://github.com/bitcoin/bitcoin/blob/55a156fca08713b020aafef91f40df8ce4bc3cae/src/wallet/spend.h#L25)
-of confirmations on the transaction (or on a conflicting transaction, represented using a negative
-number). A UTXO made available by a transaction 100 blocks deep in the most-work chain is considered
-pretty safe. On the other hand, if a newly confirmed transaction conflicts with one that sent coins
-to the wallet, those coins have a "depth" of -1 and [are not
+of confirmations on the transaction and its sender. A UTXO made available by a
+transaction sent by the wallet itself, 100 blocks deep in the most-work chain, is considered pretty
+safe. On the other hand, if a newly confirmed transaction conflicts with one that sent coins to the
+wallet, those coins have a "depth" of -1 and [are not
 considered](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/wallet/spend.cpp#L94)
 a probable source of funds.
 
+### Conclusion
+
 At the end of a transaction's lifecycle, it has deleted and added UTXOs to the network state, added
 an entry to the blockchain, and faciliated a transfer of value between two Bitcoin users anywhere in
-the world. While some nodes may prune the transaction data from their databases, its outputs can be
-used to fund other transactions in the future.
+the world. Its outputs can be used to fund other transactions, and those transactions will fund
+other transactions, and so on.
