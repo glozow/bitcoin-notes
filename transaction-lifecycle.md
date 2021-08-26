@@ -2,27 +2,28 @@
 
 ## Table of Contents
 
-- [Lifecycle of a Transaction](#Lifecycle-of-a-Transaction)
-  - [Transaction Creation](#Transaction-Creation)
-    - [What is a Transaction?](#What-is-a-Transaction)
-    - [Transaction Creation through Bitcoin Core Wallet](#Transaction-Creation-through-Bitcoin-Core-Wallet)
-    - [Transaction Children](#Transaction-Children)
-  - [Validation and Submission to Mempool](#Validation-and-Submission-to-Mempool)
-    - [Mempool Validation](#Mempool-Validation)
-      - [Context-Free Non-Script Checks](#Context-Free-Non-Script-Checks)
-      - [Contextual Non-Script Checks](#Contextual-Non-Script-Checks)
-      - [Signature and Script Checks](#Signature-and-Script-Checks)
-    - [Submission to Mempool](#Submission-to-Mempool)
-  - [P2P Transaction Relay](#P2P-Transaction-Relay)
-    - [Transaction Announcement and Broadcast](#Transaction-Announcement-and-Broadcast)
-    - [Transaction Request and Download](#Transaction-Request-and-Download)
-    - [Orphans](#Orphans)
-  - [Inclusion in a Block](#Inclusion-in-a-Block)
-    - [Mining](#Mining)
-    - [Block Relay](#Block-Relay)
-    - [Block Validation](#Block-Validation)
-    - [State Changes and Persistence to Disk](#State-Changes-and-Persistence-to-Disk)
-    - [Wallet Updates](#Wallet-Updates)
+- [Transaction Creation](#Transaction-Creation)
+  - [What is a Transaction?](#What-is-a-Transaction)
+  - [Transaction Creation through Bitcoin Core Wallet](#Transaction-Creation-through-Bitcoin-Core-Wallet)
+  - [Transaction Children](#Transaction-Children)
+- [Validation and Submission to Mempool](#Validation-and-Submission-to-Mempool)
+  - [Mempool Validation](#Mempool-Validation)
+    - [Context-Free Non-Script Checks](#Context-Free-Non-Script-Checks)
+    - [Contextual Non-Script Checks](#Contextual-Non-Script-Checks)
+    - [Signature and Script Checks](#Signature-and-Script-Checks)
+    - [Synchronization in Validation](#Synchronization-in-Validation)
+  - [Submission to Mempool](#Submission-to-Mempool)
+- [P2P Transaction Relay](#P2P-Transaction-Relay)
+  - [Transaction Announcement and Broadcast](#Transaction-Announcement-and-Broadcast)
+  - [Transaction Request and Download](#Transaction-Request-and-Download)
+  - [Orphans](#Orphans)
+- [Inclusion in a Block](#Inclusion-in-a-Block)
+  - [Mining](#Mining)
+  - [Block Relay](#Block-Relay)
+  - [Block Validation](#Block-Validation)
+- [After Consensus](#After-Consensus)
+  - [State Changes and Persistence to Disk](#State-Changes-and-Persistence-to-Disk)
+  - [Wallet Updates](#Wallet-Updates)
 
 ## Transaction Creation
 
@@ -455,6 +456,25 @@ If the node already validated a transaction before it was included in a block, n
 have changed, and the script cache has not evicted this transaction's entry, it doesn't need to run
 script checks again - it just [uses the script
 cache](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/validation.cpp#L1419-L1430)!
+
+## After Consensus
+
+Once a transaction has been included in a Proof of Work-valid block accepted by the network, it is
+said to be _confirmed_ and we might begin to consider the transfer of ownership completed. As more
+Proof of Work-valid blocks are built on top of the block which contains the transaction, it has more
+_confirmations_, and we can be reasonably certain that the money has changed hands for good.
+
+Measuring the _finality_ of a transaction using the amount of work done on top of it - commonly
+quantified by its number of confirmations - makes sense, because it represents the chances of the
+transaction getting deleted when the network accepts a competing chain (aka fork) that doesn't have
+this transaction in it. We assume that there is no other way to reverse the transaction.
+
+Of course, intentional forks are also possible, and we can measure the probability of one happening
+based on the economic cost to create them. This also means that we should factor transaction volume
+into our measurement of finality; security is economics. If we received a $100 million transaction 3
+blocks ago, we might want to hold off on popping the champagne, as it could still be economic for
+the sender to try to reverse the transaction by mining (or bribing miners to mine) a new fork with
+more work.
 
 ### State Changes and Persistence to Disk
 
