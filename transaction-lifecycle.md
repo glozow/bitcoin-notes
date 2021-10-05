@@ -22,6 +22,7 @@
   - [Block Relay](#Block-Relay)
   - [Block Validation](#Block-Validation)
 - [After Consensus](#After-Consensus)
+  - [Transaction Finality](#Transaction-Finality)
   - [State Changes and Persistence to Disk](#State-Changes-and-Persistence-to-Disk)
   - [Wallet Updates](#Wallet-Updates)
   - [Conclusion](#Conclusion)
@@ -81,7 +82,7 @@ historical blocks and current mempool contents queried from the node.
     ["funded"](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/wallet/spend.cpp#L373)
 by selecting inputs from the set of
 [UTXOs](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/wallet/spend.cpp#L67)
-available in the wallet; these comprise the inputs. A change output [may or may not be
+available in the wallet; these comprise the inputs. Change [may or may not be
 added](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/wallet/spend.cpp#L767-L778)
 to the transaction.
 
@@ -97,10 +98,10 @@ takes advantage of to open payment channels without potentially locking counterp
 multisig they can't get out of.
 
 It's possible - and quite common - for transactions to have children and grandchildren before they
-are confirmed. There's nothing stopping a user from creating 1000 generations of transactions. One
-can also create multiple children from the same output, but these would be considered conflicting
-transactions or "double spends." There are no limitations on what transactions a user can create,
-but the network will enforce a set of validation rules.
+are confirmed. Theoretically, a user can create 1000 generations of transactions or multiple
+children from the same output (conflicting transactions or "double spends"). There are no
+limitations on what transactions a user can create because they are nothing more than proposed state
+changes until they are included in a block.
 
 ## Validation and Submission to Mempool
 
@@ -152,7 +153,7 @@ in our mempool.
 
 #### Context-Free Non-Script Checks
 
-Mempoool validation in Bitcoin Core starts off with non-script checks (sometimes called
+Mempool validation in Bitcoin Core starts off with non-script checks (sometimes called
 ["PreChecks"](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/validation.cpp#L541),
 the name of the function in which these checks run).
 
@@ -372,13 +373,10 @@ pool](https://doxygen.bitcoincore.org/txorphanage_8h.html) for a while.
 
 ## Inclusion in a Block
 
-A signature indicates that the owner of the private key has agreed to spend the coins, but the
-transaction is merely a _proposed_ state change until there is network consensus that the coins have
-been sent. It is trivially cheap for a private key owner to sign multiple transactions sending the
-same coins. In Bitcoin, the consensus protocol requires transactions to be included in a block
-containing a valid Proof of Work solution and accepted by the network as part of the most-work chain
-- it is prohibitively expensive for a private key owner to reverse a transaction by rewriting (i.e.
-recomputing Proofs of Work for) these blocks.
+A signature indicates that the owner of the private key has agreed to spend the coins, but no money
+has moved until there is network consensus that the coins have been sent. Bitcoin's consensus
+protocol requires transactions to be included in a block containing a valid Proof of Work solution
+and accepted by the network as part of the most-work chain.
 
 ### Mining
 
@@ -393,8 +391,10 @@ This generates a [_block template_](https://github.com/bitcoin/bips/blob/master/
 containing a consensus-valid set of transactions and block header, just mising the nonce.
 
 2. The miner uses the block template to dispatch work tasks to other hardware (a dedicated rack of
-   ASICs, a cloud instance, or other nodes op,erated by mining pool members) dedicated to finding the
-nonce. "Mining" typically refers to this task of guessing the nonce, specifically.
+   ASICs, a cloud instance, or other nodes operated by mining pool members) dedicated to exploring
+the nonce space and brute force hashing. "Mining" typically refers to this specific step of making
+hashing many variations of the same block (e.g. with different nonces) until the block is within the
+target.
 
 3. If a solution is found, the miner calls
    [`submitblock`](https://developer.bitcoin.org/reference/rpc/submitblock.html) to submit the block
@@ -405,8 +405,7 @@ to their node and broadcast it.
 Once a new block is found, propagation speed is
 [crucial](https://podcast.chaincode.com/2020/03/12/matt-corallo-6.html) to the decentralization of
 the network. One part of this is block relay (measured by the latency between two peers), and the
-other is block validation performance. Hiding the origin of a block is not a concern, so there are
-no delays in block propagation.
+other is block validation performance.
 
 Blocks can contain megabytes worth of transactions, so block propagation by flooding would cause
 huge spikes in network traffic. We also know that nodes that keep a mempool have typically seen [the
@@ -442,14 +441,12 @@ announcement and request. Nodes serving high bandwidth compact blocks will also 
 further by sending them as soon as they see a valid Proof of Work solution, before validating the
 block's transactions.
 
-
 ### Block Validation
 
-Since v0.8, Bitcoin Core nodes have used a [UTXO set](https://github.com/bitcoin/bitcoin/pull/1677)
-rather than blockchain lookups to represent state and validate transactions.  To fully validate new
-blocks, nodes only need to consult their UTXO set and knowledge of the current consensus rules.
-Since consensus rules depend on block height and time (both of which can decrease in a reorg),
-they are recalculated for each block prior to validation. Regardless of whether or not transactions
+To fully validate new blocks, nodes only need to consult their UTXO set and knowledge of the current
+consensus rules.  Since consensus rules depend on block height and time (both of which can decrease
+in a reorg), they are recalculated for each block prior to validation. Regardless of whether or not
+transactions
 have already been previously validated and accepted to the mempool, nodes check block-wide consensus
 rules (e.g. [total sigop
 cost](https://github.com/bitcoin/bitcoin/blob/9df1906091f84d9a3a2e953a0424a88e0931ea33/src/validation.cpp#L1935),
@@ -464,38 +461,39 @@ and transaction-wide consensus rules (e.g. availability of inputs, locktimes, an
 scripts](https://github.com/bitcoin/bitcoin/blob/9df1906091f84d9a3a2e953a0424a88e0931ea33/src/validation.cpp#L1946))
 for each block.
 
-Script checking is parallelized in block validation. Block transactions are checked in order (and
-coins set updated which allows for dependencies within the block), but input script
-checks are parallelizable. They are added to a [work
+As already mentioned, script checks are expensive. Script checks in block validation are run in
+parallel and utilize the script cache. Checks for each input are added to a [work
 queue](https://github.com/bitcoin/bitcoin/blob/9df1906091f84d9a3a2e953a0424a88e0931ea33/src/validation.cpp#L1887)
 delegated to a set of threads while the main validation thread is working on other things. While
 failures should be rare - creating a valid proof of work for an invalid block is quite expensive -
-any consensus failure on a transaction invalidates the entire block, so no state changes are saved
-until these threads successfully complete.
-
-If the node already validated a transaction before it was included in a block, no consensus rules
-have changed, and the script cache has not evicted this transaction's entry, it doesn't need to run
-script checks again - it just [uses the script
+any consensus failure on a transaction invalidates the entire block and no state changes are saved
+until all threads successfully complete. If the node already validated a transaction before it was
+included in a block, no consensus rules have changed, and the script cache has not evicted this
+transaction's entry, it just [uses the script
 cache](https://github.com/bitcoin/bitcoin/blob/1a369f006fd0bec373b95001ed84b480e852f191/src/validation.cpp#L1419-L1430)!
 
 ## After Consensus
 
 Once a transaction has been included in a Proof of Work-valid block accepted by the network, it is
-said to be _confirmed_ and we might begin to consider the transfer of ownership completed. As more
+said to be _confirmed_ and we might begin to consider the transfer of coins completed. As more
 Proof of Work-valid blocks are built on top of the block which contains the transaction, it has more
 _confirmations_, and we can be reasonably certain that the money has changed hands for good.
 
+### Transaction Finality
+
 Measuring the _finality_ of a transaction using the amount of work done on top of it - commonly
 quantified by its number of confirmations - makes sense, because it represents the chances of the
-transaction getting deleted when the network accepts a competing chain (aka fork) that doesn't have
-this transaction in it. We assume that there is no other way to reverse the transaction.
+network creating and accepting a competing chain in which the transaction does not exist.
 
-Of course, intentional forks are also possible, and we can measure the probability of one happening
-based on the economic cost to create them. This also means that we should factor transaction volume
-into our measurement of finality; security is economics. If we received a $100 million transaction 3
-blocks ago, we might want to hold off on popping the champagne, as it could still be economic for
-the sender to try to reverse the transaction by mining (or bribing miners to mine) a new fork with
-more work.
+An attacker may try to do this intentionally, and we can measure the security based on the economic
+cost to do so. As one might imagine, the attack is much more expensive with higher block difficulty,
+since it requires doing more work, and higher network hashrate, since the attacker must compete with
+(or bribe) the rest of the network to create a more-work chain.
+
+This also means we should factor transaction value into our measurement of finality; security is
+economics. If we received a transaction worth $100 million a few blocks ago, we might want to hold
+off on popping the champagne, as it could still be economic for the sender to try to reverse the
+transaction by mining (or bribing miners to mine) a more-work fork.
 
 ### State Changes and Persistence to Disk
 
@@ -549,6 +547,13 @@ a probable source of funds.
 ### Conclusion
 
 At the end of a transaction's lifecycle, it has deleted and added UTXOs to the network state, added
-an entry to the blockchain, and faciliated a transfer of value between two Bitcoin users anywhere in
-the world. Its outputs can be used to fund other transactions, and those transactions will fund
-other transactions, and so on.
+an entry to the blockchain, and facilitated a transfer of value between two Bitcoin users anywhere
+in the world.
+
+It has been represented in many forms: a raw hex string, a series of TCP packets, a wallet's
+probable payment, and a collection of spent and added coins in the coins cache.
+
+In its journey, the transaction (and you, the reader!) swam through the mempool, zipped around the
+p2p network, and found a home in the block database of thousands of Bitcoin nodes. FIXME WHY IS THIS
+SO CHEESEY
+
