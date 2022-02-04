@@ -40,6 +40,16 @@ A collection of mempool diagram examples.
 
 ![image](./revault_pin.png)
 
+### Package Feerate
+
+![image](./package_cpfp.png)
+
+![image](./package_rich_parent.png)
+
+![image](./package_mixed_feerate.png)
+
+![image](./package_low_and_modified.png)
+
 #### Incentives: Parent Pays for Child
 
 ![image](./parent_pays_for_child.png)
