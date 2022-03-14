@@ -32,6 +32,8 @@ sybil att-ACK PR reviews.
 
 - Helpful notes for other reviewers: https://github.com/bitcoin/bitcoin/pull/20962#pullrequestreview-780869719
 
+Other examples:
+
 - https://github.com/bitcoin/bitcoin/pull/21061#issuecomment-851563105
 
 - https://github.com/bitcoin/bitcoin/pull/23121#pullrequestreview-842354501
@@ -41,6 +43,8 @@ sybil att-ACK PR reviews.
 - https://github.com/bitcoin/bitcoin/pull/19988#discussion_r499511223
 
 - https://github.com/bitcoin/bitcoin/pull/19988#discussion_r498781706
+
+- https://github.com/bitcoin/bitcoin/pull/19109#issuecomment-636246238
 
 You can leave a helpful review without being an expert:
 
@@ -95,13 +99,10 @@ Before considering anything implementation-related:
 
 - Could this PR be split up?
 
-- Could the PR-splitting leave us in a weird intermediary state? examples: [sending sendrecon before
-  you can do recon](https://github.com/bitcoin/bitcoin/pull/23443#pullrequestreview-823455718),
-[a commit fails tests](https://github.com/bitcoin/bitcoin/pull/23075#pullrequestreview-827662306)
+- Could the PR-splitting leave us in a weird intermediary state? https://github.com/bitcoin/bitcoin/pull/23443#pullrequestreview-823455718,
+https://github.com/bitcoin/bitcoin/pull/23075#pullrequestreview-827662306
 
-- Are all commits atomic? If a commit
-  [fails](https://github.com/bitcoin/bitcoin/pull/23075#pullrequestreview-827662306), it's harder to
-revert and breaks `git bisect`
+- Are all commits atomic? If a commit fails on its own, it's harder to revert and breaks `git bisect`. https://github.com/bitcoin/bitcoin/pull/23075#pullrequestreview-827662306
 
 - Could this just be a scripted-diff?
 
@@ -115,21 +116,17 @@ Does the PR add a new feature?
 
 - Would this feature only benefit an extremely advanced user who should probably write a custom patch instead?
 
-- Has anyone actually requested this? examples: [nonexistent future soft fork](https://github.com/bitcoin/bitcoin/pull/22871#issuecomment-915689161)
+- Has anyone actually requested this? examples: https://github.com/bitcoin/bitcoin/pull/22871#issuecomment-915689161
 
 - Are there other features that would be enabled by this PR?
 
 - If this PR is an improvement, how is it demonstrated?
 
-	- Is there a bench? A simulation?
-
-	- Is there a description of how to reproduce something manually?
-[example race](https://github.com/bitcoin/bitcoin/pull/22577#issue-955282835)
+	- Is there a bench or simulation?
 
 	- Has it been tested within the context of the full network? How does it interact with other protocol features (e.g. compact block relay) or proposed improvements?
 
-	- Did you verify the results yourself? example
-	  [bench](https://github.com/bitcoin/bitcoin/pull/23157#pullrequestreview-775676379)
+	- Did you verify the results yourself? https://github.com/bitcoin/bitcoin/pull/23157#pullrequestreview-775676379
 
 	- Did you evaluate the method used to gather measurements?
 
@@ -137,8 +134,10 @@ Does the PR solve a problem? Does it fix a bug?
 
 - Is it a real bug or misuse of the software?
 
+- If there is a bug, is there a test that can be run before to reproduce the issue, and after to verify the fix? Is there a description of how to reproduce the bug manually? https://github.com/bitcoin/bitcoin/pull/24538#issue-1166645904, https://github.com/bitcoin/bitcoin/pull/22577#issue-955282835
+
 - Can the issue be solved simply with better documentation?
-  [example](https://github.com/bitcoin/bitcoin/pull/22867#pullrequestreview-822532341)
+https://github.com/bitcoin/bitcoin/pull/22867#pullrequestreview-822532341
 
 ### Downsides
 
@@ -155,7 +154,7 @@ What are the downsides of this PR, conceptually?
 - Is it incompatible with another existing/proposed improvement?
 
 - Is this compatible with all of the {operating systems, architectures, platforms, dependency
-  versions} we want to support?  [example](https://github.com/bitcoin/bitcoin/pull/23585#issuecomment-983259221)
+  versions} we want to support?  https://github.com/bitcoin/bitcoin/pull/23585#issuecomment-983259221
 
 ### For users
 
@@ -182,19 +181,19 @@ This PR is a good idea. That doesn't mean it should be merged.
 
 	- improved/worsened technical debt
 
-	- Performance
+	- Performance: https://github.com/bitcoin/bitcoin/pull/24530#issuecomment-1065073285
 
-	- User Interface, examples: [sweepwallet](https://github.com/bitcoin/bitcoin/pull/23534#issuecomment-1005891404)
+	- User Interface: https://github.com/bitcoin/bitcoin/pull/23534#issuecomment-1005891404
 
 	- safety wrt activation
 
-	- global vs local maximum, examples: [packages in fee estimation](https://github.com/bitcoin/bitcoin/pull/17331#pullrequestreview-665781489)
+	- global vs local maximum: https://github.com/bitcoin/bitcoin/pull/17331#pullrequestreview-665781489
 
-	- kill another bird with the same stone, examples: [background fee estimator](https://github.com/bitcoin/bitcoin/pull/17786#issuecomment-1005017943)
+	- kill another bird with the same stone: https://github.com/bitcoin/bitcoin/pull/17786#issuecomment-1005017943
 
-	- code organization and architecture, examples: [CCoinsViewPackage](https://github.com/bitcoin/bitcoin/pull/20833#discussion_r563152582), [ReconciliationState](https://github.com/bitcoin/bitcoin/pull/23443#discussion_r763854039)
+	- code organization and architecture: https://github.com/bitcoin/bitcoin/pull/20833#discussion_r563152582, https://github.com/bitcoin/bitcoin/pull/23443#discussion_r763854039
 
-- Are the magic numbers (constants, percentages, feerates, sizes, etc.) well-researched? examples: [consolidation feerate](https://github.com/bitcoin/bitcoin/pull/22009#discussion_r691956992)
+- Are the magic numbers (constants, percentages, feerates, sizes, etc.) well-researched? https://github.com/bitcoin/bitcoin/pull/22009#discussion_r691956992
 
 
 ### Security, Privacy, DoS
@@ -208,21 +207,20 @@ This PR is a good idea. That doesn't mean it should be merged.
 #### Are we introducing new DoS vectors?
 
 - Is it possible for a peer to exhaust CPU resources? How much stuff can a peer make us do? e.g.
-  [number of calls](https://github.com/bitcoin/bitcoin/pull/19988#discussion_r499511223)
+https://github.com/bitcoin/bitcoin/pull/19988#discussion_r499511223
 
 - Could a peer cause us to loop infinitely or for a long period of time?
 
 - Could a peer cause an OOM?
 
-- What are the bounds on memory usage? examples: [maprelay memory
-  blowout](https://github.com/bitcoin/bitcoin/pull/14220#issuecomment-428486018 )
+- What are the bounds on memory usage? https://github.com/bitcoin/bitcoin/pull/14220#issuecomment-428486018
 
 - If this is deployed to a whole network of nodes, will it cause periodic spikes in bandwidth usage?
 
 - Is there an assert() statement we could potentially hit due to peer input, causing a whole network of nodes to crash?
 
 - How does this affect the performance of our UTXOset cache? examples:
-  [thrashing and faster lookups](https://github.com/bitcoin/bitcoin/blob/807169e10b4a18324356ed6ee4d69587b96a7c70/src/validation.cpp#L1234-L1251)
+https://github.com/bitcoin/bitcoin/blob/807169e10b4a18324356ed6ee4d69587b96a7c70/src/validation.cpp#L1234-L1251
 
 - Would this give a peer the ability to make us write an unbounded amount of data to our debug.log?
 
@@ -231,8 +229,7 @@ This PR is a good idea. That doesn't mean it should be merged.
 - Could this make it easier to deanonymize transaction origin?
 
 - Could an attacker take advantage of this behavior to more easily analyze network topology?
-  examples: [addr relay
-cache](https://github.com/bitcoin/bitcoin/commit/acd6135b43941fa51d52f5fcdb2ce944280ad01e)
+https://github.com/bitcoin/bitcoin/commit/acd6135b43941fa51d52f5fcdb2ce944280ad01e)
 
 - Are we creating a behavior that can be used to fingerprint this node?
 
@@ -265,11 +262,9 @@ cache](https://github.com/bitcoin/bitcoin/commit/acd6135b43941fa51d52f5fcdb2ce94
 
 At first glance, this PR looks like a good improvement and the approach seems to make sense. Here is
 the Big danger now; it can have some nasty bugs in it.
-Don't "no behavior changes," sometimes a bug is hiding in a refactor: [example
-bug](https://github.com/bitcoin/bitcoin/pull/21160#discussion_r623305322).
+Don't "no behavior changes," sometimes a bug is hiding in a refactor: https://github.com/bitcoin/bitcoin/pull/21160#discussion_r623305322.
 
-- Is there a BIP/specification? Does this implementation match the specification? example: [recon
-  version](https://github.com/bitcoin/bitcoin/pull/23443#discussion_r763874524)
+- Is there a BIP/specification? Does this implementation match the specification? https://github.com/bitcoin/bitcoin/pull/23443#discussion_r763874524
 
 ### Common Bitcoin-Specific Bugs and Attacks
 
@@ -282,14 +277,17 @@ versa?
 
 - Are we using fee when we should be using feerate, and vice versa?
 
+- What happens if there is a reorg?
+
+- For a wallet transaction or UTXO, should a transaction be treated differently if it is {confirmed, unconfirmed}? What if there is a conflicting transaction in the {mempool, chain, wallet}?
+
 - Is this code safe when the transaction’s txid != wtxid?
 
 - Can this have any impact on block propagation speed?
 
 - Does this break the guix build?
 
-- What impacts might this have on LN transactions or other L2 projects? example: [would ban LN
-  in tx relay](https://github.com/bitcoin/bitcoin/pull/22871#pullrequestreview-760633448)
+- What impacts might this have on LN transactions or other L2 projects? https://github.com/bitcoin/bitcoin/pull/22871#pullrequestreview-760633448
 
 ### Performance
 
@@ -314,13 +312,11 @@ versa?
 ### C++
 
 - Are we making copies of variables when we should be passing a reference?
-  [example](https://github.com/bitcoin/bitcoin/pull/22677#discussion_r760400537)
+https://github.com/bitcoin/bitcoin/pull/22677#discussion_r760400537
 
 - Are we casting variables unnecessarily? Should we be using auto instead?
 
 - Const things should be const
-
-- RAII
 
 - Free your memory, or just use smart pointers
 
@@ -348,8 +344,8 @@ Examples:
 Are there enough tests?
 
 - Is there good test coverage? Is there any code that isn’t tested? example
-  [sendrecon](https://github.com/bitcoin/bitcoin/pull/23443#discussion_r763865574)
-
+  https://github.com/bitcoin/bitcoin/pull/23443#discussion_r763865574
+  
 - Are there normal-usage or edge cases that aren’t tested?
 
 - Is the type of test appropriate? (unit, fuzz, functional, bench)
@@ -359,7 +355,7 @@ Are there enough tests?
 	- Is it just an implementation detail -> unit
 
 	- Are there two implementations that you need to ensure are identical -> differential fuzz,
-	  [example](https://github.com/bitcoin/bitcoin/pull/19988/commits/5b03121d60527a193a84c339151481f9c9c1962b)
+	  https://github.com/bitcoin/bitcoin/pull/19988/commits/5b03121d60527a193a84c339151481f9c9c1962b
 
 	- Is it trying to demonstrate a low-level performance boost -> bench
 
@@ -368,7 +364,7 @@ Are there enough tests?
 - Is it actually testing what it should be testing?
 
 	- If you’re asserting that something doesn’t happen, is it because of a delay? e.g.
-[tx announcement delay](https://github.com/bitcoin/bitcoin/pull/21327#discussion_r585782939)
+https://github.com/bitcoin/bitcoin/pull/21327#discussion_r585782939
 
 	- If you’re asserting that something doesn’t happen, is it because it’s handled asynchronously?
 
@@ -381,12 +377,12 @@ Are the tests well-written?
 
 - Is it using the functional test framework to test a very low-level detail?
 
-- Are the tests unacceptably slow? examples: [LegacyScriptPubKeyMan in selector tests](https://github.com/bitcoin/bitcoin/pull/23288)
+- Are the tests unacceptably slow? https://github.com/bitcoin/bitcoin/pull/23288
 
 - Do the tests rely on timing that may be delayed when they are run in parallel with other tests?
-  Are the tests racy? [example](https://github.com/bitcoin/bitcoin/pull/11740#issuecomment-350817586)
+  Are the tests racy? https://github.com/bitcoin/bitcoin/pull/11740#issuecomment-350817586
 
-- Are the tests themselves maintainable? example: [script verification flags must be updated](https://github.com/bitcoin/bitcoin/pull/21280#discussion_r603986455)
+- Are the tests themselves maintainable? https://github.com/bitcoin/bitcoin/pull/21280#discussion_r603986455
 
 - In functional tests: does the test have a wallet dependency when it’s not testing wallet behavior?
 
@@ -406,14 +402,13 @@ Are the tests well-written?
 
 	- Are release notes needed?
 
-	- Are potential footguns and user errors plastered with warnings? e.g.
-[mentioning bytes when you want weight](https://github.com/bitcoin/bitcoin/pull/23201#discussion_r783933728)
+	- Are potential footguns and user errors plastered with warnings? https://github.com/bitcoin/bitcoin/pull/23201#discussion_r783933728
 
 	- Are future TODOs documented well enough so that maintenance doesn’t require the author to personally remember to do something? E.g. deprecations
 
 	- Are newly introduced functions, members, classes, etc. accompanied with a doxygen header comment?
 
-- If a future developer traced the history back to a particular commit, would they be able to understand why a change was made? Does the description match what the code does (will be in the merge commit log) - [if not, it should be updated](https://github.com/bitcoin/bitcoin/pull/22009#issuecomment-901766747)
+- If a future developer traced the history back to a particular commit, would they be able to understand why a change was made? Does the description match what the code does (will be in the merge commit log)? If not, it should be updated. https://github.com/bitcoin/bitcoin/pull/22009#issuecomment-901766747
 
 - If a future developer were to change this, might they make a mistake if they don't understand it
   fully? Can this be guarded - e.g. with static assertions, sanity checks, etc?
