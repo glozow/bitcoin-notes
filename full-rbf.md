@@ -205,7 +205,8 @@ past one another in many discussions.
 
 - The prevalence of full RBF on the network
 	- Peter Todd [reports](https://lists.linuxfoundation.org/pipermail/bitcoin-dev/2022-October/021012.html) that he has observed replacements of non-signaling transactions
-	  using opentimestamps. He notes that they are rare, and it's possible that these are due to propagation latency.
+	  using opentimestamps. He notes that they are rare, and it's possible that these
+replacements are due to other factors.
 	- He also
 	  [posted](https://np.reddit.com/r/Bitcoin/comments/40ejy8/peter_todd_with_my_doublespendpy_tool_with/cytlhh0/)
 about this in 2016. That thread reads similarly to this year's discussion.
