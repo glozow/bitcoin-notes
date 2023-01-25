@@ -20,6 +20,8 @@ This algorithm (which incidentally does not solve a Knapsack problem) approaches
 
 **How it works in detail**
 
+Given that Target means amount to be spent, UTXO means Unspent Transaction Output 
+
 1. If any of your UTXO matches the Target it will be used.
 2. If the "sum of all your UTXO smaller than the Target" happens to match the Target, they will be used. (This is the case if you sweep a complete wallet.)
 3. If the "sum of all your UTXO smaller than the Target" doesn't surpass the target, the smallest UTXO greater than your Target will be used.
@@ -29,7 +31,7 @@ Otherwise it finally settles for the minimum of
   -  the smallest UTXO greater than the Target
   -  the smallest combination of UTXO it discovered in Step 4
 
-Here are some examples for further illustration
+**Here are some examples for further illustration**
 
 Suppose you have four UTXO:
 - UTXO_A 0.1BTC
@@ -37,9 +39,8 @@ Suppose you have four UTXO:
 - UTXO_C 0.5BTC
 - UTXO_D 1BTC
 
-I will be ignoring transaction fees for simplicity's sake.
-Target means amount to be spent
-UTXO means Unspent Transaction Output
+***I will be ignoring transaction fees for simplicity's sake.***
+
 *Example 1:*
 
 You want to send 0.3BTC.
@@ -58,7 +59,7 @@ Bitcoin Core finds that UTXO_C is the smallest UTXO greater than the Target, and
 *Example 4:*
 
 You want to send 0.35BTC.
-Bitcoin Core finds that UTXO_C is the smallest UTXO greater than the Target, and that the sum of all UTXO smaller than the target (i.e. UTXO_A + UTXO_B = 0.1 + 0.3 = 0.4) does not match the Target. It adds up randomly selected UTXO 1000 times until they surpass the Target, remembering the smallest sufficient combination. The smallest sufficient combination is then compared with the smallest single input greater than the target. Assuming that it does find the best combination here which would be UTXO_A + UTXO_B, it finds that Target less_than UTXO_A + UTXO B less_than UTXO_C and uses UTXO_A and UTXO_B as inputs
+Bitcoin Core finds that UTXO_C is the smallest UTXO greater than the Target, and that the sum of all UTXO smaller than the target (i.e. UTXO_A + UTXO_B = 0.1 + 0.3 = 0.4) does not match the Target. It adds up randomly selected UTXO 1000 times until they surpass the Target, remembering the smallest sufficient combination. The smallest sufficient combination is then compared with the smallest single input greater than the target. Assuming that it does find the best combination here which would be UTXO_A + UTXO_B, it finds that Target < UTXO_A + UTXO B < UTXO_C and uses UTXO_A and UTXO_B as inputs
 
 *Example 5:*
 
