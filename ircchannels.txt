@@ -1,0 +1,37 @@
+IRC Channels
+------------
+
+Join these IRC channels for Bitcoin and Lightning Network development, in
+alphabetical order:
+
+#bitcoin-core-builds
+#bitcoin-core-dev
+#bitcoin-core-gui
+#bitcoin-core-pr-reviews
+#bitcoin-wizards
+#c-lightning
+##hwi
+#joinmarket
+#lightning-dev
+#lnd
+##miniscript
+#rust-bitcoin
+#secp256k1
+
+
+IRC Logs
+--------
+
+Log for #bitcoin-core-dev may be found at:
+
+http://www.erisian.com.au/bitcoin-core-dev
+
+
+Logs for #bitcoin-core-pr-reviews may be found at:
+
+https://bitcoincore.reviews
+
+
+This server hosts a number of Bitcoin-related IRC channel logs:
+
+http://gnusha.org
