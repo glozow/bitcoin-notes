@@ -77,6 +77,7 @@ to attend meetings, ask questions, and/or ask for CI restarts.
 - [High Priority PR Board][23]
 - [Marco's Code Coverage Graphs][24]
 - [good first issues][25]
+- [good first reviews][32]
 
 ### Setup
 
@@ -273,8 +274,7 @@ be a good "recipe book" for C++14.
 
 Now that you've reviewed your first PR, what's next?
 
-[Leave a review on the
-PR](https://github.com/bitcoin/bitcoin/blob/master/CONTRIBUTING.md#peer-review). Here's a
+[Leave a review on the PR](https://github.com/bitcoin/bitcoin/blob/master/CONTRIBUTING.md#peer-review). Here's a
 [writeup](https://github.com/glozow/bitcoin-notes/blob/master/review-checklist.md#bad-reviews) on
 what makes a "good" or "bad" review. Some more resources on "how to contribute" to Bitcoin Core:
 
@@ -347,7 +347,7 @@ a review on Thursdays.
 [22]: https://github.com/chaincodelabs/bitcoin-curriculum
 
 [23]: https://github.com/orgs/bitcoin/projects/1
-[24]: https://marcofalke.github.io/btc_cov/total.coverage/index.html 
+[24]: https://marcofalke.github.io/btc_cov/total.coverage/index.html
 [25]: https://github.com/bitcoin/bitcoin/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22
 [26]: https://jonatack.github.io/articles/on-reviewing-and-helping-those-who-do-it
 [27]: https://github.com/glozow/bitcoin-notes/blob/master/review-checklist.md
@@ -355,3 +355,4 @@ a review on Thursdays.
 [29]: https://github.com/bitcoin/bitcoin/blob/master/CONTRIBUTING.md
 [30]: https://bitcoin.stackexchange.com/
 [31]: https://bitcoinops.org/en/topics/
+[32]: https://github.com/bitcoin/bitcoin/pulls?q=is%3Apr+is%3Aopen+label%3A%22Good+First+Review%22
