@@ -1,5 +1,8 @@
 # Full RBF
 
+This was last updated in October 2022. It is still on my todo list to update for the last year's
+worth of discussions.
+
 Disclaimer: this is my personal understanding from reading everything I can and speaking to as many
 people as possible. I'll indicate when I'm giving my own opinion. Otherwise, I've tried to be
 open-minded and fair but there may be unintentional biases.
