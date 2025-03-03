@@ -1,6 +1,6 @@
 ## Release Checklist
 
-(\*) = with perms
+(\*) = with perms. All other tasks can be done by other people.
 
 ### Minor
 
@@ -98,3 +98,18 @@ Additional for major releases:
 - [ ] eol website: maintenance table, archive
 	- [ ] review
 	- [ ] merge\*
+
+#### Timelines / Coordination
+
+(?) = I think this is a good idea for coordination purposes
+
+- `T - 6m` (?) Branch off of previous release: Talk about big-size rocks to accomplish in this milestone
+- `T - 3m`: (?) Talk about medium-size Pebbles to add to Milestone (this is separate from bug fixes etc. that should go in). Imo at this point all big features for the release should already have been discussed.
+- `T - 8w`: Translations freeze
+- `T - 7w`: (?) Kill-Shill-Merge for remaining PRs on the milestone / what should go in next one
+- `T - 6w`: Feature Freeze
+- `T - 4w`: Create release notes, find somebody to create RC Testing Guide
+- `T - 4w`: Branch off, tag first RC
+- `T - 4w`: Review Club for RC testing
+- `T`: Target Release date
+
