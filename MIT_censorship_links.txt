@@ -1,0 +1,14 @@
+Links for MIT Bitcoin Expo 2025 Talk
+
+- Txdownloadman: https://github.com/bitcoin/bitcoin/blob/1d04155884f10380d9efe5520330cbcf890fbe43/src/node/txdownload_impl.h
+- Overhaul tx request: https://github.com/bitcoin/bitcoin/pull/19988
+- BIP 339: https://github.com/bitcoin/bips/blob/master/bip-0339.mediawiki
+- wtxid for transaction relay: https://github.com/bitcoin/bitcoin/pull/18044
+- censorship CVE-2024-52913: https://bitcoincore.org/en/2024/07/03/disclose_already_asked_for/
+
+- DoS fix for mapOrphanTransactions (2012): https://github.com/bitcoin/bitcoin/pull/911
+- orphan loop DoS CVE-2024-52914: https://bitcoincore.org/en/2024/07/03/disclose-orphan-dos/
+- stats on orphanage overflows: https://delvingbitcoin.org/t/stats-on-orphanage-overflows/1421/3
+- Known TxOrphanage problems: https://github.com/bitcoin-core/bitcoin-devwiki/wiki/%5BP2P%5D-known-TxOrphanage-problems
+- improve orphanage DoS bounds: https://github.com/bitcoin/bitcoin/pull/31829
+- fuzz one-honest: https://github.com/glozow/bitcoin/tree/2025-01-fuzz-one-honest
