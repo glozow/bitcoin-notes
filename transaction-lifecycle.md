@@ -554,6 +554,5 @@ It has been represented in many forms: a raw hex string, a series of TCP packets
 probable payment, and a collection of spent and added coins in the coins cache.
 
 In its journey, the transaction (and you, the reader!) swam through the mempool, zipped around the
-p2p network, and found a home in the block database of thousands of Bitcoin nodes. FIXME WHY IS THIS
-SO CHEESEY
+p2p network, and found a home in the block database of thousands of Bitcoin nodes.
 
