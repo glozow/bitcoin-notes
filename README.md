@@ -9,8 +9,9 @@ Maybe you came here looking for...
 
 ### PR Reviews
 
-- [Full RBF - 2022](/full-rbf.md)
+- [OP_RETURN limits PR#32406](/opreturn_merge.md)
 - [Datacarriersize PR#28408 - 2023](/datacarrier_28408.md)
+- [Full RBF - 2022](/full-rbf.md)
 
 ### Educational
 
